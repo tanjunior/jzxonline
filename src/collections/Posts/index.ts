@@ -124,6 +124,15 @@ export const Posts: CollectionConfig<'posts'> = {
               relationTo: 'posts',
             },
             {
+              name: 'relatedItems',
+              type: 'relationship',
+              admin: {
+                position: 'sidebar',
+              },
+              hasMany: true,
+              relationTo: 'items',
+            },
+            {
               name: 'categories',
               type: 'relationship',
               admin: {

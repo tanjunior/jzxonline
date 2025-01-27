@@ -25,8 +25,8 @@ export default async function Page({ params: paramsPromise }: Args) {
 
   if (!Number.isInteger(sanitizedPageNumber)) notFound()
 
-  const posts = await payload.find({
-    collection: 'posts',
+  const items = await payload.find({
+    collection: 'items',
     depth: 1,
     limit: 12,
     page: sanitizedPageNumber,
@@ -38,24 +38,24 @@ export default async function Page({ params: paramsPromise }: Args) {
       <PageClient />
       <div className="container mb-16">
         <div className="prose dark:prose-invert max-w-none">
-          <h1>Posts</h1>
+          <h1>Items</h1>
         </div>
       </div>
 
       <div className="container mb-8">
         <PageRange
-          collection="posts"
-          currentPage={posts.page}
+          collection="items"
+          currentPage={items.page}
           limit={12}
-          totalDocs={posts.totalDocs}
+          totalDocs={items.totalDocs}
         />
       </div>
 
-      <CollectionArchive posts={posts.docs} />
+      <CollectionArchive items={items.docs} />
 
       <div className="container">
-        {posts?.page && posts?.totalPages > 1 && (
-          <Pagination page={posts.page} totalPages={posts.totalPages} collection="posts" />
+        {items?.page && items?.totalPages > 1 && (
+          <Pagination page={items.page} totalPages={items.totalPages} collection="items" />
         )}
       </div>
     </div>
@@ -65,14 +65,14 @@ export default async function Page({ params: paramsPromise }: Args) {
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { pageNumber } = await paramsPromise
   return {
-    title: `Payload Website Template Posts Page ${pageNumber || ''}`,
+    title: `Payload Website Template Items Page ${pageNumber || ''}`,
   }
 }
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
   const { totalDocs } = await payload.count({
-    collection: 'posts',
+    collection: 'items',
     overrideAccess: false,
   })
 

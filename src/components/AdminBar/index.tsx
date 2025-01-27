@@ -23,6 +23,10 @@ const collectionLabels = {
     plural: 'Posts',
     singular: 'Post',
   },
+  items: {
+    plural: 'Items',
+    singular: 'item',
+  },
   projects: {
     plural: 'Projects',
     singular: 'Project',

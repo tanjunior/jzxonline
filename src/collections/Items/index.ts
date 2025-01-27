@@ -27,8 +27,8 @@ import {
 } from '@payloadcms/plugin-seo/fields'
 import { slugField } from '@/fields/slug'
 
-export const Posts: CollectionConfig<'posts'> = {
-  slug: 'posts',
+export const Items: CollectionConfig<'items'> = {
+  slug: 'items',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -37,7 +37,7 @@ export const Posts: CollectionConfig<'posts'> = {
   },
   // This config controls what's populated by default when a post is referenced
   // https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property
-  // Type safe if the collection slug generic is passed to `CollectionConfig` - `CollectionConfig<'posts'>
+  // Type safe if the collection slug generic is passed to `CollectionConfig` - `CollectionConfig<'items'>
   defaultPopulate: {
     title: true,
     slug: true,
@@ -53,7 +53,7 @@ export const Posts: CollectionConfig<'posts'> = {
       url: ({ data, req }) => {
         const path = generatePreviewPath({
           slug: typeof data?.slug === 'string' ? data.slug : '',
-          collection: 'posts',
+          collection: 'items',
           req,
         })
 
@@ -63,7 +63,7 @@ export const Posts: CollectionConfig<'posts'> = {
     preview: (data, { req }) =>
       generatePreviewPath({
         slug: typeof data?.slug === 'string' ? data.slug : '',
-        collection: 'posts',
+        collection: 'items',
         req,
       }),
     useAsTitle: 'title',
@@ -72,6 +72,11 @@ export const Posts: CollectionConfig<'posts'> = {
     {
       name: 'title',
       type: 'text',
+      required: true,
+    },
+    {
+      name: 'price',
+      type: 'number',
       required: true,
     },
     {
@@ -201,6 +206,30 @@ export const Posts: CollectionConfig<'posts'> = {
       },
       hasMany: true,
       relationTo: 'users',
+    },
+    // This field is only used to populate the user data via the `populateAuthors` hook
+    // This is because the `user` collection has access control locked to protect user privacy
+    // GraphQL will also not return mutated user data that differs from the underlying schema
+    {
+      name: 'populatedAuthors',
+      type: 'array',
+      access: {
+        update: () => false,
+      },
+      admin: {
+        disabled: true,
+        readOnly: true,
+      },
+      fields: [
+        {
+          name: 'id',
+          type: 'text',
+        },
+        {
+          name: 'name',
+          type: 'text',
+        },
+      ],
     },
     ...slugField(),
   ],

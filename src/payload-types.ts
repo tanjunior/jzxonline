@@ -13,7 +13,6 @@ export interface Config {
   collections: {
     pages: Page;
     posts: Post;
-    items: Item;
     media: Media;
     categories: Category;
     users: User;
@@ -30,7 +29,6 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
-    items: ItemsSelect<false> | ItemsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -122,10 +120,6 @@ export interface Page {
                   value: string | Page;
                 } | null)
               | ({
-                relationTo: 'items';
-                value: string | Item;
-              } | null)
-              | ({
                   relationTo: 'posts';
                   value: string | Post;
                 } | null);
@@ -181,54 +175,6 @@ export interface Post {
     [k: string]: unknown;
   };
   relatedPosts?: (string | Post)[] | null;
-  categories?: (string | Category)[] | null;
-  meta?: {
-    title?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (string | null) | Media;
-    description?: string | null;
-  };
-  publishedAt?: string | null;
-  authors?: (string | User)[] | null;
-  populatedAuthors?:
-    | {
-        id?: string | null;
-        name?: string | null;
-      }[]
-    | null;
-  slug?: string | null;
-  slugLock?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "items".
- */
-export interface Item {
-  id: string;
-  title: string;
-  heroImage?: (string | null) | Media;
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  relatedPosts?: (string | Post)[] | null;
-  relatedItems?: (string | Item)[] | null;
   categories?: (string | Category)[] | null;
   meta?: {
     title?: string | null;
@@ -414,10 +360,6 @@ export interface CallToActionBlock {
                 value: string | Page;
               } | null)
             | ({
-                relationTo: 'items';
-                value: string | Item;
-              } | null)
-            | ({
                 relationTo: 'posts';
                 value: string | Post;
               } | null);
@@ -468,10 +410,6 @@ export interface ContentBlock {
                 value: string | Page;
               } | null)
             | ({
-                relationTo: 'items';
-                value: string | Item;
-              } | null)
-            | ({
                 relationTo: 'posts';
                 value: string | Post;
               } | null);
@@ -520,17 +458,13 @@ export interface ArchiveBlock {
     [k: string]: unknown;
   } | null;
   populateBy?: ('collection' | 'selection') | null;
-  relationTo?: 'posts' | 'items' |null;
+  relationTo?: 'posts' | null;
   categories?: (string | Category)[] | null;
   limit?: number | null;
   selectedDocs?:
     | {
         relationTo: 'posts';
         value: string | Post;
-      }[]
-    | {
-        relationTo: 'items';
-        value: string | Item;
       }[]
     | null;
   id?: string | null;
@@ -754,10 +688,6 @@ export interface Redirect {
           value: string | Page;
         } | null)
       | ({
-          relationTo: 'items';
-          value: string | Item;
-        } | null)
-      | ({
           relationTo: 'posts';
           value: string | Post;
         } | null);
@@ -794,8 +724,8 @@ export interface Search {
   title?: string | null;
   priority?: number | null;
   doc: {
-    relationTo: 'posts' | 'items';
-    value: string | Post | Item;
+    relationTo: 'posts';
+    value: string | Post;
   };
   slug?: string | null;
   meta?: {
@@ -919,10 +849,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: string | Post;
-      } | null)
-    | ({
-        relationTo: 'items';
-        value: string | Item;
       } | null)
     | ({
         relationTo: 'media';
@@ -1142,38 +1068,6 @@ export interface PostsSelect<T extends boolean = true> {
   heroImage?: T;
   content?: T;
   relatedPosts?: T;
-  categories?: T;
-  meta?:
-    | T
-    | {
-        title?: T;
-        image?: T;
-        description?: T;
-      };
-  publishedAt?: T;
-  authors?: T;
-  populatedAuthors?:
-    | T
-    | {
-        id?: T;
-        name?: T;
-      };
-  slug?: T;
-  slugLock?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "items_select".
- */
-export interface ItemsSelect<T extends boolean = true> {
-  title?: T;
-  heroImage?: T;
-  content?: T;
-  relatedPosts?: T;
-  relatedItems?: T;
   categories?: T;
   meta?:
     | T
@@ -1595,8 +1489,8 @@ export interface Header {
                 value: string | Page;
               } | null)
             | ({
-                relationTo: 'posts' | 'items';
-                value: string | Post | Item;
+                relationTo: 'posts';
+                value: string | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -1624,8 +1518,8 @@ export interface Footer {
                 value: string | Page;
               } | null)
             | ({
-                relationTo: 'posts' | 'items';
-                value: string | Post | Item;
+                relationTo: 'posts';
+                value: string | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -1696,13 +1590,9 @@ export interface TaskSchedulePublish {
           value: string | Page;
         } | null)
       | ({
-          relationTo: 'posts' | 'items';
-          value: string | Post | Item;
-        } | null)
-      | ({
-        relationTo: 'items';
-        value: string | Item;
-      } | null);
+          relationTo: 'posts';
+          value: string | Post;
+        } | null);
     global?: string | null;
     user?: (string | null) | User;
   };

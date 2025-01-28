@@ -33,7 +33,7 @@ export const FormBlock: React.FC<
 
   const formMethods = useForm({
     // defaultValues: formFromProps.fields,
-    async defaultValues(payload) {
+    async defaultValues() {
       return formFromProps.fields
     },
   })

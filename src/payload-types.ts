@@ -522,20 +522,14 @@ export interface ArchiveBlock {
     [k: string]: unknown;
   } | null;
   populateBy?: ('collection' | 'selection') | null;
-  relationTo?: ('products' | 'posts') | null;
+  relationTo?: 'posts' | null;
   categories?: (number | Category)[] | null;
   limit?: number | null;
   selectedDocs?:
-    | (
-        | {
-            relationTo: 'posts';
-            value: number | Post;
-          }
-        | {
-            relationTo: 'products';
-            value: number | Product;
-          }
-      )[]
+    | {
+        relationTo: 'posts';
+        value: number | Post;
+      }[]
     | null;
   id?: string | null;
   blockName?: string | null;

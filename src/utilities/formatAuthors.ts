@@ -1,4 +1,4 @@
-import { Item, Post } from '@/payload-types'
+import { Product, Post } from '@/payload-types'
 
 /**
  * Formats an array of populatedAuthors from Posts into a prettified string.
@@ -11,7 +11,9 @@ import { Item, Post } from '@/payload-types'
  *
  */
 export const formatAuthors = (
-  authors: NonNullable<NonNullable<Post['populatedAuthors'] | Item['populatedAuthors']>[number]>[],
+  authors: NonNullable<
+    NonNullable<Post['populatedAuthors'] | Product['populatedAuthors']>[number]
+  >[],
 ) => {
   // Ensure we don't have any authors without a name
   const authorNames = authors.map((author) => author.name).filter(Boolean)

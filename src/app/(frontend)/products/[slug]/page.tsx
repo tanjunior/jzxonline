@@ -13,12 +13,12 @@ import type { Post } from '@/payload-types'
 import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { ItemHero } from '@/heros/ItemHero'
+import { ProductHero } from '@/heros/ProductHero'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
-  const items = await payload.find({
-    collection: 'items',
+  const products = await payload.find({
+    collection: 'products',
     draft: false,
     limit: 1000,
     overrideAccess: false,
@@ -28,7 +28,7 @@ export async function generateStaticParams() {
     },
   })
 
-  const params = items.docs.map(({ slug }) => {
+  const params = products.docs.map(({ slug }) => {
     return { slug }
   })
 
@@ -44,10 +44,10 @@ type Args = {
 export default async function Post({ params: paramsPromise }: Args) {
   const { isEnabled: draft } = await draftMode()
   const { slug = '' } = await paramsPromise
-  const url = '/items/' + slug
-  const item = await queryPostBySlug({ slug })
+  const url = '/products/' + slug
+  const product = await queryPostBySlug({ slug })
 
-  if (!item) return <PayloadRedirects url={url} />
+  if (!product) return <PayloadRedirects url={url} />
 
   return (
     <article className="pt-16 pb-16">
@@ -58,15 +58,15 @@ export default async function Post({ params: paramsPromise }: Args) {
 
       {draft && <LivePreviewListener />}
 
-      <ItemHero item={item} />
+      <ProductHero product={product} />
 
       <div className="flex flex-col items-center gap-4 pt-8">
         <div className="container">
-          <RichText className="max-w-[48rem] mx-auto" data={item.content} enableGutter={false} />
-          {item.relatedPosts && item.relatedPosts.length > 0 && (
+          <RichText className="max-w-[48rem] mx-auto" data={product.content} enableGutter={false} />
+          {product.relatedPosts && product.relatedPosts.length > 0 && (
             <RelatedPosts
               className="mt-12 max-w-[52rem] lg:grid lg:grid-cols-subgrid col-start-1 col-span-3 grid-rows-[2fr]"
-              docs={item.relatedPosts.filter((item) => typeof item === 'object')}
+              docs={product.relatedPosts.filter((product) => typeof product === 'object')}
             />
           )}
         </div>
@@ -77,9 +77,9 @@ export default async function Post({ params: paramsPromise }: Args) {
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { slug = '' } = await paramsPromise
-  const item = await queryPostBySlug({ slug })
+  const product = await queryPostBySlug({ slug })
 
-  return generateMeta({ doc: item })
+  return generateMeta({ doc: product })
 }
 
 const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
@@ -88,7 +88,7 @@ const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
   const payload = await getPayload({ config: configPromise })
 
   const result = await payload.find({
-    collection: 'items',
+    collection: 'products',
     draft,
     limit: 1,
     overrideAccess: draft,

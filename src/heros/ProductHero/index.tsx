@@ -1,15 +1,15 @@
 import { formatDateTime } from 'src/utilities/formatDateTime'
 import React from 'react'
 
-import type { Item } from '@/payload-types'
+import type { Product } from '@/payload-types'
 
 import { Media } from '@/components/Media'
 import { formatAuthors } from '@/utilities/formatAuthors'
 
-export const ItemHero: React.FC<{
-  item: Item
-}> = ({ item }) => {
-  const { categories, heroImage, populatedAuthors, publishedAt, title } = item
+export const ProductHero: React.FC<{
+  product: Product
+}> = ({ product }) => {
+  const { categories, heroImage, populatedAuthors, publishedAt, title } = product
 
   const hasAuthors =
     populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors) !== ''

@@ -3,7 +3,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { unstable_cache } from 'next/cache'
 
-const getItemsSitemap = unstable_cache(
+const getProductsSitemap = unstable_cache(
   async () => {
     const payload = await getPayload({ config })
     const SITE_URL =
@@ -12,7 +12,7 @@ const getItemsSitemap = unstable_cache(
       'https://example.com'
 
     const results = await payload.find({
-      collection: 'items',
+      collection: 'products',
       overrideAccess: false,
       draft: false,
       depth: 0,
@@ -33,23 +33,23 @@ const getItemsSitemap = unstable_cache(
 
     const sitemap = results.docs
       ? results.docs
-          .filter((item) => Boolean(item?.slug))
-          .map((item) => ({
-            loc: `${SITE_URL}/items/${item?.slug}`,
-            lastmod: item.updatedAt || dateFallback,
+          .filter((product) => Boolean(product?.slug))
+          .map((product) => ({
+            loc: `${SITE_URL}/products/${product?.slug}`,
+            lastmod: product.updatedAt || dateFallback,
           }))
       : []
 
     return sitemap
   },
-  ['items-sitemap'],
+  ['products-sitemap'],
   {
-    tags: ['items-sitemap'],
+    tags: ['products-sitemap'],
   },
 )
 
 export async function GET() {
-  const sitemap = await getItemsSitemap()
+  const sitemap = await getProductsSitemap()
 
   return getServerSideSitemap(sitemap)
 }

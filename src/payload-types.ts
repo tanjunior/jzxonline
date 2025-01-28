@@ -16,7 +16,7 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
-    items: Item;
+    products: Product;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -33,7 +33,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
-    items: ItemsSelect<false> | ItemsSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -126,8 +126,8 @@ export interface Page {
                   value: number | Post;
                 } | null)
               | ({
-                  relationTo: 'items';
-                  value: number | Item;
+                  relationTo: 'products';
+                  value: number | Product;
                 } | null);
             url?: string | null;
             label: string;
@@ -181,7 +181,7 @@ export interface Post {
     [k: string]: unknown;
   };
   relatedPosts?: (number | Post)[] | null;
-  relatedItems?: (number | Item)[] | null;
+  relatedProducts?: (number | Product)[] | null;
   categories?: (number | Category)[] | null;
   meta?: {
     title?: string | null;
@@ -299,9 +299,9 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "items".
+ * via the `definition` "products".
  */
-export interface Item {
+export interface Product {
   id: number;
   title: string;
   price: number;
@@ -321,7 +321,7 @@ export interface Item {
     };
     [k: string]: unknown;
   };
-  relatedItems?: (number | Item)[] | null;
+  relatedProducts?: (number | Product)[] | null;
   relatedPosts?: (number | Post)[] | null;
   categories?: (number | Category)[] | null;
   meta?: {
@@ -420,8 +420,8 @@ export interface CallToActionBlock {
                 value: number | Post;
               } | null)
             | ({
-                relationTo: 'items';
-                value: number | Item;
+                relationTo: 'products';
+                value: number | Product;
               } | null);
           url?: string | null;
           label: string;
@@ -474,8 +474,8 @@ export interface ContentBlock {
                 value: number | Post;
               } | null)
             | ({
-                relationTo: 'items';
-                value: number | Item;
+                relationTo: 'products';
+                value: number | Product;
               } | null);
           url?: string | null;
           label: string;
@@ -522,7 +522,7 @@ export interface ArchiveBlock {
     [k: string]: unknown;
   } | null;
   populateBy?: ('collection' | 'selection') | null;
-  relationTo?: ('items' | 'posts') | null;
+  relationTo?: ('products' | 'posts') | null;
   categories?: (number | Category)[] | null;
   limit?: number | null;
   selectedDocs?:
@@ -532,8 +532,8 @@ export interface ArchiveBlock {
             value: number | Post;
           }
         | {
-            relationTo: 'items';
-            value: number | Item;
+            relationTo: 'products';
+            value: number | Product;
           }
       )[]
     | null;
@@ -762,8 +762,8 @@ export interface Redirect {
           value: number | Post;
         } | null)
       | ({
-          relationTo: 'items';
-          value: number | Item;
+          relationTo: 'products';
+          value: number | Product;
         } | null);
     url?: string | null;
   };
@@ -803,8 +803,8 @@ export interface Search {
         value: number | Post;
       }
     | {
-        relationTo: 'items';
-        value: number | Item;
+        relationTo: 'products';
+        value: number | Product;
       };
   slug?: string | null;
   meta?: {
@@ -942,8 +942,8 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
-        relationTo: 'items';
-        value: number | Item;
+        relationTo: 'products';
+        value: number | Product;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1151,7 +1151,7 @@ export interface PostsSelect<T extends boolean = true> {
   heroImage?: T;
   content?: T;
   relatedPosts?: T;
-  relatedItems?: T;
+  relatedProducts?: T;
   categories?: T;
   meta?:
     | T
@@ -1305,14 +1305,14 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "items_select".
+ * via the `definition` "products_select".
  */
-export interface ItemsSelect<T extends boolean = true> {
+export interface ProductsSelect<T extends boolean = true> {
   title?: T;
   price?: T;
   heroImage?: T;
   content?: T;
-  relatedItems?: T;
+  relatedProducts?: T;
   relatedPosts?: T;
   categories?: T;
   meta?:
@@ -1610,8 +1610,8 @@ export interface Header {
                 value: number | Post;
               } | null)
             | ({
-                relationTo: 'items';
-                value: number | Item;
+                relationTo: 'products';
+                value: number | Product;
               } | null);
           url?: string | null;
           label: string;
@@ -1643,8 +1643,8 @@ export interface Footer {
                 value: number | Post;
               } | null)
             | ({
-                relationTo: 'items';
-                value: number | Item;
+                relationTo: 'products';
+                value: number | Product;
               } | null);
           url?: string | null;
           label: string;
@@ -1719,8 +1719,8 @@ export interface TaskSchedulePublish {
           value: number | Post;
         } | null)
       | ({
-          relationTo: 'items';
-          value: number | Item;
+          relationTo: 'products';
+          value: number | Product;
         } | null);
     global?: string | null;
     user?: (number | null) | User;

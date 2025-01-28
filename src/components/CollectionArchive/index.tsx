@@ -1,15 +1,15 @@
 import { cn } from '@/utilities/ui'
 import React from 'react'
 
-import { Card, CardItemData, CardPostData } from '@/components/Card'
+import { Card, CardProductData, CardPostData } from '@/components/Card'
 
 export type Props = {
   posts?: CardPostData[]
-  items?: CardItemData[]
+  products?: CardProductData[]
 }
 
 export const CollectionArchive: React.FC<Props> = (props) => {
-  const { posts, items } = props
+  const { posts, products } = props
 
   return (
     <div className={cn('container')}>
@@ -27,11 +27,11 @@ export const CollectionArchive: React.FC<Props> = (props) => {
             return null
           })}
 
-          {items?.map((result, index) => {
+          {products?.map((result, index) => {
             if (typeof result === 'object' && result !== null) {
               return (
                 <div className="col-span-4" key={index}>
-                  <Card className="h-full" doc={result} relationTo="items" showCategories />
+                  <Card className="h-full" doc={result} relationTo="products" showCategories />
                 </div>
               )
             }

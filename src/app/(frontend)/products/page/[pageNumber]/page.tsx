@@ -25,8 +25,8 @@ export default async function Page({ params: paramsPromise }: Args) {
 
   if (!Number.isInteger(sanitizedPageNumber)) notFound()
 
-  const items = await payload.find({
-    collection: 'items',
+  const products = await payload.find({
+    collection: 'products',
     depth: 1,
     limit: 12,
     page: sanitizedPageNumber,
@@ -38,24 +38,24 @@ export default async function Page({ params: paramsPromise }: Args) {
       <PageClient />
       <div className="container mb-16">
         <div className="prose dark:prose-invert max-w-none">
-          <h1>Items</h1>
+          <h1>Products</h1>
         </div>
       </div>
 
       <div className="container mb-8">
         <PageRange
-          collection="items"
-          currentPage={items.page}
+          collection="products"
+          currentPage={products.page}
           limit={12}
-          totalDocs={items.totalDocs}
+          totalDocs={products.totalDocs}
         />
       </div>
 
-      <CollectionArchive items={items.docs} />
+      <CollectionArchive products={products.docs} />
 
       <div className="container">
-        {items?.page && items?.totalPages > 1 && (
-          <Pagination page={items.page} totalPages={items.totalPages} collection="items" />
+        {products?.page && products?.totalPages > 1 && (
+          <Pagination page={products.page} totalPages={products.totalPages} collection="products" />
         )}
       </div>
     </div>
@@ -65,14 +65,14 @@ export default async function Page({ params: paramsPromise }: Args) {
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { pageNumber } = await paramsPromise
   return {
-    title: `Payload Website Template Items Page ${pageNumber || ''}`,
+    title: `Payload Website Template Products Page ${pageNumber || ''}`,
   }
 }
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
   const { totalDocs } = await payload.count({
-    collection: 'items',
+    collection: 'products',
     overrideAccess: false,
   })
 

@@ -16,7 +16,7 @@ import { Code } from '../../blocks/Code/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { populateAuthors } from './hooks/populateAuthors'
-import { revalidateDelete, revalidateItem } from './hooks/revalidateItem'
+import { revalidateDelete, revalidateProduct } from './hooks/revalidateProduct'
 
 import {
   MetaDescriptionField,
@@ -27,8 +27,8 @@ import {
 } from '@payloadcms/plugin-seo/fields'
 import { slugField } from '@/fields/slug'
 
-export const Items: CollectionConfig<'items'> = {
-  slug: 'items',
+export const Products: CollectionConfig<'products'> = {
+  slug: 'products',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -37,7 +37,7 @@ export const Items: CollectionConfig<'items'> = {
   },
   // This config controls what's populated by default when a post is referenced
   // https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property
-  // Type safe if the collection slug generic is passed to `CollectionConfig` - `CollectionConfig<'items'>
+  // Type safe if the collection slug generic is passed to `CollectionConfig` - `CollectionConfig<'products'>
   defaultPopulate: {
     title: true,
     slug: true,
@@ -53,7 +53,7 @@ export const Items: CollectionConfig<'items'> = {
       url: ({ data, req }) => {
         const path = generatePreviewPath({
           slug: typeof data?.slug === 'string' ? data.slug : '',
-          collection: 'items',
+          collection: 'products',
           req,
         })
 
@@ -63,7 +63,7 @@ export const Items: CollectionConfig<'items'> = {
     preview: (data, { req }) =>
       generatePreviewPath({
         slug: typeof data?.slug === 'string' ? data.slug : '',
-        collection: 'items',
+        collection: 'products',
         req,
       }),
     useAsTitle: 'title',
@@ -113,7 +113,7 @@ export const Items: CollectionConfig<'items'> = {
         {
           fields: [
             {
-              name: 'relatedItems',
+              name: 'relatedProducts',
               type: 'relationship',
               admin: {
                 position: 'sidebar',
@@ -126,7 +126,7 @@ export const Items: CollectionConfig<'items'> = {
                 }
               },
               hasMany: true,
-              relationTo: 'items',
+              relationTo: 'products',
             },
             {
               name: 'relatedPosts',
@@ -234,7 +234,7 @@ export const Items: CollectionConfig<'items'> = {
     ...slugField(),
   ],
   hooks: {
-    afterChange: [revalidateItem],
+    afterChange: [revalidateProduct],
     afterRead: [populateAuthors],
     afterDelete: [revalidateDelete],
   },

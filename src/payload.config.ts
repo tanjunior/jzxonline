@@ -17,6 +17,7 @@ import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
+import { Cart } from './collections/Cart'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -65,7 +66,7 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URI || '',
     },
   }),
-  collections: [Pages, Posts, Media, Categories, Users, Products],
+  collections: [Pages, Posts, Media, Categories, Users, Products, Cart],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   plugins: [

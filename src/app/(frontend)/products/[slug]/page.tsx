@@ -1,19 +1,17 @@
 import type { Metadata } from 'next'
 
-import { RelatedPosts } from '@/blocks/RelatedPosts/Component'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { draftMode } from 'next/headers'
 import React, { cache } from 'react'
-import RichText from '@/components/RichText'
 
 import type { Post } from '@/payload-types'
 
 import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { ProductHero } from '@/heros/ProductHero'
+import ProductPage from '@/components/Product/Page'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -58,19 +56,7 @@ export default async function Post({ params: paramsPromise }: Args) {
 
       {draft && <LivePreviewListener />}
 
-      <ProductHero product={product} />
-
-      <div className="flex flex-col items-center gap-4 pt-8">
-        <div className="container">
-          <RichText className="max-w-[48rem] mx-auto" data={product.content} enableGutter={false} />
-          {product.relatedPosts && product.relatedPosts.length > 0 && (
-            <RelatedPosts
-              className="mt-12 max-w-[52rem] lg:grid lg:grid-cols-subgrid col-start-1 col-span-3 grid-rows-[2fr]"
-              docs={product.relatedPosts.filter((product) => typeof product === 'object')}
-            />
-          )}
-        </div>
-      </div>
+      <ProductPage product={product} />
     </article>
   )
 }

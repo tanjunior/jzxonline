@@ -1,56 +1,60 @@
 import type { Metadata } from 'next/types'
 
-// import { CollectionArchive } from '@/components/CollectionArchive'
-import { PageRange } from '@/components/PageRange'
-import { Pagination } from '@/components/Pagination'
-import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import React from 'react'
+import { Suspense } from 'react'
 import PageClient from './page.client'
+import configPromise from '@payload-config'
+import { Skeleton } from '@/components/ui/skeleton'
+import ProductsClient from '@/components/Product'
 
 export const dynamic = 'force-static'
 export const revalidate = 600
 
-export default async function Page() {
+export default async function ProductsPage() {
   const payload = await getPayload({ config: configPromise })
-
-  const products = await payload.find({
-    collection: 'products',
-    depth: 1,
-    limit: 12,
-    overrideAccess: false,
-    select: {
-      title: true,
-      slug: true,
-      categories: true,
-      meta: true,
-    },
-  })
+  const [products, categories] = await Promise.all([
+    payload.find({
+      collection: 'products',
+      // depth: 1,
+      // limit: 12,
+      // overrideAccess: false,
+    }),
+    payload.find({
+      collection: 'categories',
+      // depth: 1,
+      // limit: 12,
+      // overrideAccess: false,
+    }),
+  ])
 
   return (
-    <div className="pt-24 pb-24">
+    <div className="container mx-auto px-4 py-8">
       <PageClient />
-      <div className="container mb-16">
-        <div className="prose dark:prose-invert max-w-none">
-          <h1>Products</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center">Shop</h1>
+      <Suspense fallback={<ProductListSkeleton />}>
+        <ProductsClient initialProducts={products.docs} categories={categories.docs} />
+      </Suspense>
+    </div>
+  )
+}
+
+function ProductListSkeleton() {
+  return (
+    <div className="space-y-8">
+      <Skeleton className="h-12 w-full max-w-sm" />
+      <div className="flex flex-col md:flex-row gap-8">
+        <Skeleton className="w-full md:w-64 h-[600px]" />
+        <div className="flex-grow space-y-4">
+          <div className="flex justify-between">
+            <Skeleton className="h-10 w-[180px]" />
+            <Skeleton className="h-10 w-20" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-[300px] w-full" />
+            ))}
+          </div>
         </div>
-      </div>
-
-      <div className="container mb-8">
-        <PageRange
-          collection="products"
-          currentPage={products.page}
-          limit={12}
-          totalDocs={products.totalDocs}
-        />
-      </div>
-
-      {/* <CollectionArchive products={products.docs} /> */}
-
-      <div className="container">
-        {products.totalPages > 1 && products.page && (
-          <Pagination page={products.page} totalPages={products.totalPages} collection="products" />
-        )}
       </div>
     </div>
   )

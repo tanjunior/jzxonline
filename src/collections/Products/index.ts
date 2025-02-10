@@ -42,13 +42,15 @@ export const Products: CollectionConfig<'products'> = {
     title: true,
     slug: true,
     categories: true,
+    price: true,
+    heroImage: true,
     meta: {
       image: true,
       description: true,
     },
   },
   admin: {
-    defaultColumns: ['title', 'slug', 'updatedAt'],
+    defaultColumns: ['title', 'slug', 'updatedAt', 'price'],
     livePreview: {
       url: ({ data, req }) => {
         const path = generatePreviewPath({
@@ -164,7 +166,6 @@ export const Products: CollectionConfig<'products'> = {
             MetaImageField({
               relationTo: 'media',
             }),
-
             MetaDescriptionField({}),
             PreviewField({
               // if the `generateUrl` function is configured

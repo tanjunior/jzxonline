@@ -17,6 +17,7 @@ export interface Config {
     categories: Category;
     users: User;
     products: Product;
+    cart: Cart;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -34,6 +35,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    cart: CartSelect<false> | CartSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -736,6 +738,23 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cart".
+ */
+export interface Cart {
+  id: number;
+  items?:
+    | {
+        product: number | Product;
+        quantity?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  user: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -938,6 +957,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'products';
         value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'cart';
+        value: number | Cart;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1329,6 +1352,22 @@ export interface ProductsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cart_select".
+ */
+export interface CartSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        product?: T;
+        quantity?: T;
+        id?: T;
+      };
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

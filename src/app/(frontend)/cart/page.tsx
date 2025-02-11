@@ -52,7 +52,7 @@ export default function CartPage() {
               height={100}
               className="rounded"
             /> */}
-            <Media resource={item.product.heroImage!} imgClassName="rounded" />
+            <Media resource={item.product.meta!.image!} imgClassName="rounded" />
             <div className="flex-grow">
               <h3 className="font-semibold">{item.product.title}</h3>
               <p className="text-sm text-muted-foreground">${item.product.price.toFixed(2)}</p>

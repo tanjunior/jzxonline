@@ -28,7 +28,7 @@ export const revalidateProduct: CollectionAfterChangeHook<Product> = ({
       revalidatePath(oldPath)
       revalidateTag('products-sitemap')
     }
-    revalidatePath('/products')
+    revalidatePath('/products', 'layout')
   }
   return doc
 }
@@ -38,7 +38,7 @@ export const revalidateDelete: CollectionAfterDeleteHook<Product> = ({ doc, req:
     const path = `/products/${doc?.slug}`
 
     revalidatePath(path)
-    revalidatePath('/products')
+    revalidatePath('/products', 'layout')
     revalidateTag('products-sitemap')
   }
 

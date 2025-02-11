@@ -7,7 +7,7 @@ import { CartItem, getCartItems, updateCartItems } from '../utilities/cart'
 type CartContextType = {
   cartItems: CartItem[]
   addToCart: (product: Product) => void
-  removeFromCart: (productId: string) => Promise<void>
+  removeFromCart: (product: Product) => Promise<void>
   updateQuantity: (product: Product, quantity: number) => Promise<void>
   clearCart: () => Promise<void>
   isLoading: boolean
@@ -48,9 +48,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }
 
-  const removeFromCart = async (productId: string | number) => {
+  const removeFromCart = async (product: Product) => {
     setIsLoading(true)
-    const updatedItems = cartItems.filter((item) => item.product.id !== productId)
+    const updatedItems = cartItems.filter((item) => item.product.id !== product.id)
     setCartItems(updatedItems)
     updateCartItems(updatedItems)
     setIsLoading(false)

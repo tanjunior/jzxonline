@@ -73,11 +73,7 @@ export function CartSheet() {
                     +
                   </Button>
                 </div>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => removeFromCart(item.product.id as unknown as string)}
-                >
+                <Button size="icon" variant="ghost" onClick={() => removeFromCart(item.product)}>
                   ×
                 </Button>
               </div>

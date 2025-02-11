@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import ProductsClient from '@/components/Product'
 
 export const dynamic = 'force-static'
-export const revalidate = 600
+export const revalidate = 30
 
 export default async function ProductsPage() {
   const payload = await getPayload({ config: configPromise })

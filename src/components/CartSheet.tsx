@@ -53,7 +53,7 @@ export function CartSheet() {
                   height={50}
                   className="rounded"
                 /> */}
-                <Media resource={item.product.meta?.image!} imgClassName="rounded" size="50" />
+                <Media resource={item.product.meta!.image!} imgClassName="rounded" size="50" />
                 <div className="flex-grow">
                   <h3 className="font-semibold">{item.product.title}</h3>
                   <p className="text-sm text-muted-foreground">${item.product.price.toFixed(2)}</p>

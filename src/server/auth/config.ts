@@ -1,19 +1,20 @@
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { v4 as uuid } from "uuid"
-import { encode as defaultEncode } from "next-auth/jwt"
-import { env } from "~/env";
-
-import { db } from "~/server/db";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import {
   accounts,
   sessions,
   users,
   verificationTokens,
 } from "~/server/db/schema";
+import { env } from "~/env";
+
+import { v4 as uuid } from "uuid";
+import { encode as defaultEncode } from "next-auth/jwt";
+
+import { db } from "~/server/db";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -22,13 +23,12 @@ import {
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
 declare module "next-auth" {
-  type UserRole = "admin" | "user"
+  type UserRole = "admin" | "user";
 
   interface Session extends DefaultSession {
     user: {
       id: string;
-      // ...other properties
-      role: UserRole;
+      role: string;
     } & DefaultSession["user"];
   }
 
@@ -37,13 +37,6 @@ declare module "next-auth" {
     // role: string;
   }
 }
-
-const adapter = DrizzleAdapter(db, {
-  usersTable: users,
-  accountsTable: accounts,
-  sessionsTable: sessions,
-  verificationTokensTable: verificationTokens,
-})
 
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
@@ -56,7 +49,7 @@ export const authConfig = {
     GitHubProvider({
       clientId: env.AUTH_GITHUB_ID,
       clientSecret: env.AUTH_GITHUB_SECRET,
-      allowDangerousEmailAccountLinking: true
+      allowDangerousEmailAccountLinking: true,
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -67,10 +60,13 @@ export const authConfig = {
       async authorize(credentials) {
         if (!credentials) return null;
         if (!credentials.email || !credentials.password) return null;
-        console.log(credentials)
+        console.log(credentials);
         const user = await db.query.users.findFirst({
           where(users, { eq, and }) {
-            return and(eq(users.email, credentials.email as string), eq(users.password, credentials.password as string));
+            return and(
+              eq(users.email, credentials.email as string),
+              eq(users.password, credentials.password as string),
+            );
           },
         });
         if (!user) return null;
@@ -84,11 +80,11 @@ export const authConfig = {
           email: user.email,
           name: user.name,
           id: user.id,
-          role: user.role
+          role: user.role,
         };
       },
       type: "credentials",
-    })
+    }),
     /**
      * ...add more providers here.
      *
@@ -99,7 +95,6 @@ export const authConfig = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
-  adapter: adapter,
   callbacks: {
     session: ({ session, user }) => ({
       ...session,
@@ -110,6 +105,8 @@ export const authConfig = {
       },
     }),
     jwt: ({ token, account }) => {
+      console.log(`[config][jwt][token]: ${JSON.stringify(token, null, 2)}`)
+      console.log(`[config][jwt][account]: ${JSON.stringify(account, null, 2)}`)
       if (account?.provider == "credentials") {
         token.credentials = true;
       }
@@ -118,12 +115,20 @@ export const authConfig = {
   },
   jwt: {
     encode: async (params) => {
+      console.log(`[config][encode][params]: ${JSON.stringify(params, null, 2)}`)
       if (params.token?.credentials) {
         if (!params.token.sub) {
           throw new Error("no sub");
         }
 
         const sessionToken = uuid();
+
+        const adapter = DrizzleAdapter(db, {
+          usersTable: users,
+          accountsTable: accounts,
+          sessionsTable: sessions,
+          verificationTokensTable: verificationTokens,
+        });
 
         const session = await adapter.createSession!({
           userId: params.token.sub,
@@ -134,7 +139,7 @@ export const authConfig = {
         if (!session) throw new Error("session not created");
         return sessionToken;
       }
-      return defaultEncode(params)
+      return defaultEncode(params);
     },
   },
   pages: {
@@ -144,5 +149,7 @@ export const authConfig = {
     // verifyRequest: "/auth/verify", // Redirect here for email verification
     // newUser: "/", // Redirect here after initial sign-up
   },
-  debug: true
+  // secret: env.AUTH_SECRET,
+  debug: true,
+  // debug: true
 } satisfies NextAuthConfig;

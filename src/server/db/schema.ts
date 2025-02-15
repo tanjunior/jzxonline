@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { InferInsertModel, relations, sql } from "drizzle-orm";
 import {
   index,
   integer,
@@ -8,7 +8,9 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { type AdapterAccount } from "next-auth/adapters";
+import { z } from "zod";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -51,6 +53,8 @@ export const users = createTable("user", {
     withTimezone: true,
   }).default(sql`CURRENT_TIMESTAMP`),
   image: varchar("image", { length: 255 }),
+  password: text("password"),
+  role: text('role').default("user").notNull()
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -127,3 +131,27 @@ export const verificationTokens = createTable(
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   })
 );
+
+export type user = InferInsertModel<typeof users>;
+export const userCreateSchema = createInsertSchema(users).omit({
+  emailVerified: true,
+  id: true,
+});
+export const userCreateForm = createInsertSchema(users, {
+  name: z.string().min(1, "Name is required"),
+  email: (schema) => schema.min(1, "Email is required"),
+  password: z.string().min(6, "Password length must be at least 6")
+}).pick({
+  name: true,
+  email: true,
+  password: true
+})
+
+export const userLoginForm = createSelectSchema(users, {
+  password: z.string().min(1)
+}).pick({
+  email: true,
+  password: true
+})
+
+export const sessionCreateSchema = createInsertSchema(sessions);

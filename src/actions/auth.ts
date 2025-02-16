@@ -1,53 +1,117 @@
 "use server";
-import { and, eq } from "drizzle-orm";
-import { redirect } from 'next/navigation'
+import { eq } from "drizzle-orm";
+import { CredentialsSignin } from "next-auth";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { redirect, RedirectType } from "next/navigation";
+import { z, ZodError } from "zod";
 import { signIn as naSignIn, signOut as naSignOut } from "~/server/auth";
 import { db } from "~/server/db";
-import { user, users } from "~/server/db/schema";
+import { accounts, userLoginForm, users } from "~/server/db/schema";
 
 export async function signIn(
   provider: string,
-  credentials?: {
-    email: string;
-    password: string;
-  },
+  credentials?: z.infer<typeof userLoginForm>,
 ) {
-  await naSignIn(provider, { ...credentials, redirectTo: "/" });
+  try {
+    if (provider == "credentials") {
+      await naSignIn(provider, { ...credentials, redirect: false});
+    } else await naSignIn(provider, { redirect: false });
+  } catch (error) {
+    if (isRedirectError(error)) {
+      return error.message;
+    } else if (error instanceof CredentialsSignin) {
+      return error.cause;
+    } else if (error instanceof ZodError) {
+      return error.message;
+    } else if (error instanceof Error) {
+      console.log(error);
+      return error.message;
+    } else if (typeof error === "string") {
+      return error;
+    } else {
+      return "something went wrong";
+    }
+  }
+  redirect("/")
 }
 
 export async function signOut() {
   await naSignOut();
 }
 
-export const register = async (values: user) => {
+export const register = async (values: { email: string; password: string }) => {
   const user = await db.query.users.findFirst({
-    where: eq(users.email, values.email),
+    where(users, { eq }) {
+      return eq(users.email, values.email);
+    },
   });
 
-  if (user && user.password != null) {
-    return { error: "User already exists", success: false };
-  } else if (user && user.password == null) {
-    const [update] = await db
-      .update(users)
-      .set({ password: values.password })
-      .where(eq(users.email, values.email))
-      .returning({ id: users.id });
-    if (!update) {
-      throw new Error("Failed to update user");
-    }
-    return redirect("/login");
-  }
-
-  try {
+  if (!user) {
     const [newUser] = await db
       .insert(users)
       .values(values)
       .returning({ id: users.id });
+
     if (!newUser) {
-      throw new Error("Failed to create user");
+      return {
+        error: `Fail to register please try again.`,
+        success: false,
+      };
     }
+
+    const [account] = await db
+      .insert(accounts)
+      .values({
+        userId: newUser.id,
+        type: "credentials",
+        provider: "credentials",
+        providerAccountId: newUser.id,
+      })
+      .returning();
+
+    if (!account) {
+      return {
+        error: `Fail to register please try again.`,
+        success: false,
+      };
+    }
+
     return { id: newUser.id, success: true };
-  } catch (error) {
-    return { error: error, success: false };
   }
+
+  if (user.password != null) {
+    // return {
+    //   error: `Account registered with ${values.email} already exist.`,
+    //   success: false,
+    //   redirect: "/login",
+    // };
+    return redirect("/login", RedirectType.replace);
+  }
+
+  const [update] = await db
+    .update(users)
+    .set({ password: values.password })
+    .where(eq(users.email, values.email))
+    .returning({ id: users.id });
+  if (!update) {
+    return { error: "Failed to update user", success: false };
+  }
+  const [account] = await db
+    .insert(accounts)
+    .values({
+      userId: user.id,
+      type: "credentials",
+      provider: "credentials",
+      providerAccountId: user.id,
+    })
+    .returning();
+
+  if (!account) {
+    return {
+      error: `Fail to link user to account, please try again.`,
+      success: false,
+    };
+  }
+  // return { id: user.id, success: true };
+  return redirect("/login", RedirectType.replace);
 };

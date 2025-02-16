@@ -5,21 +5,21 @@ import { env } from "./env";
 import NextAuth from "next-auth";
 import { authConfig } from "./server/auth/config";
 
-import { cache } from "react";
+// import { cache } from "react";
 // 1. Specify protected and public routes
 // const protectedRoutes = ["/settings", "/admin"];
 // const publicRoutes = ["/login", "/register"];
 
-const { auth: uncachedAuth } = NextAuth(authConfig)
+const { auth: middleware } = NextAuth(authConfig)
 
-const auth = cache(uncachedAuth);
-export default auth(async function middleware(req: NextRequest) {
+// const auth = cache(uncachedAuth);
+export default middleware(async (req: NextRequest) => {
   // // 2. Check if the current route is protected or public
   // const path = req.nextUrl.pathname;
   // const isProtectedRoute = protectedRoutes.includes(path);
   // const isPublicRoute = publicRoutes.includes(path);
 
-  const session = await auth();
+  const session = await middleware();
   console.log("[middleware][session]: ", session)
   const token = await getToken({
     req,
@@ -48,5 +48,5 @@ export default auth(async function middleware(req: NextRequest) {
 
 // Routes Middleware should not run on
 export const config = {
-  matcher: ["/((?!api|trpc|_next/static|_next/image|.*\\.png$).*)"],
+  matcher: ["/((?!api|trpc|_next/static|_next/image|favicon.ico|.*\\.png$).*)"],
 };

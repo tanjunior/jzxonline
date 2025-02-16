@@ -68,7 +68,7 @@ export const accounts = createTable(
       .notNull()
       .references(() => users.id),
     type: varchar("type", { length: 255 })
-      .$type<AdapterAccount["type"]>()
+      .$type<AdapterAccount["type"] | "credentials">()
       .notNull(),
     provider: varchar("provider", { length: 255 }).notNull(),
     providerAccountId: varchar("provider_account_id", {
@@ -133,9 +133,10 @@ export const verificationTokens = createTable(
 );
 
 export type user = InferInsertModel<typeof users>;
-export const userCreateSchema = createInsertSchema(users).omit({
-  emailVerified: true,
-  id: true,
+export const userCreateSchema = createInsertSchema(users).pick({
+  name: true,
+  password: true,
+  email: true
 });
 export const userCreateForm = createInsertSchema(users, {
   name: z.string().min(1, "Name is required"),
@@ -148,7 +149,7 @@ export const userCreateForm = createInsertSchema(users, {
 })
 
 export const userLoginForm = createSelectSchema(users, {
-  password: z.string().min(1)
+  password: z.string().min(6)
 }).pick({
   email: true,
   password: true

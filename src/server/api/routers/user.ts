@@ -1,7 +1,7 @@
 import {
   createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
+  // protectedProcedure,
+  // publicProcedure,
 } from "~/server/api/trpc";
 
 export const userRouter = createTRPCRouter({
@@ -13,37 +13,31 @@ export const userRouter = createTRPCRouter({
   //         return eq(users.email, input.email);
   //       },
   //     });
-
   //     if (!user) {
   //       const [newUser] = await ctx.db
   //         .insert(users)
   //         .values(input)
   //         .returning({ id: users.id });
-
   //       if (!newUser) {
   //         return {
   //           error: `Fail to register please try again.`,
   //           success: false,
   //         };
   //       }
-
   //       const [account] = await ctx.db.insert(accounts).values({
   //         userId: newUser.id,
   //         type: "credentials",
   //         provider: "credentials",
   //         providerAccountId: newUser.id,
   //       }).returning()
-
   //       if (!account) {
   //         return {
   //           error: `Fail to register please try again.`,
   //           success: false,
   //         };
   //       }
-
   //       return { id: newUser.id, success: true };
   //     }
-
   //     if (user.password != null) {
   //       return {
   //         error: `Account registered with ${input.email} already exist.`,
@@ -65,7 +59,6 @@ export const userRouter = createTRPCRouter({
   //         provider: "credentials",
   //         providerAccountId: user.id,
   //       }).returning()
-
   //       if (!account) {
   //         return {
   //           error: `Fail to link user to account, please try again.`,
@@ -74,7 +67,6 @@ export const userRouter = createTRPCRouter({
   //       }
   //       return { id: user.id, success: true };
   //     }
-
   //   }),
   // login: publicProcedure
   //   .input(userLoginForm)

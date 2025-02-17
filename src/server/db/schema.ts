@@ -1,4 +1,4 @@
-import { InferInsertModel, relations, sql } from "drizzle-orm";
+import { type InferInsertModel, relations, sql } from "drizzle-orm";
 import {
   index,
   integer,
@@ -32,13 +32,13 @@ export const posts = createTable(
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
-      () => new Date()
+      () => new Date(),
     ),
   },
   (example) => ({
     createdByIdIdx: index("created_by_idx").on(example.createdById),
     nameIndex: index("name_idx").on(example.name),
-  })
+  }),
 );
 
 export const users = createTable("user", {
@@ -54,7 +54,7 @@ export const users = createTable("user", {
   }).default(sql`CURRENT_TIMESTAMP`),
   image: varchar("image", { length: 255 }),
   password: text("password"),
-  role: text('role').default("user").notNull()
+  role: text("role").default("user").notNull(),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -88,7 +88,7 @@ export const accounts = createTable(
       columns: [account.provider, account.providerAccountId],
     }),
     userIdIdx: index("account_user_id_idx").on(account.userId),
-  })
+  }),
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -111,7 +111,7 @@ export const sessions = createTable(
   },
   (session) => ({
     userIdIdx: index("session_user_id_idx").on(session.userId),
-  })
+  }),
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -130,30 +130,30 @@ export const verificationTokens = createTable(
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
+  }),
 );
 
 export type user = InferInsertModel<typeof users>;
 export const userCreateSchema = createInsertSchema(users).pick({
   name: true,
   password: true,
-  email: true
+  email: true,
 });
 export const userCreateForm = createInsertSchema(users, {
   name: z.string().min(1, "Name is required"),
   email: (schema) => schema.min(1, "Email is required"),
-  password: z.string().min(6, "Password length must be at least 6")
+  password: z.string().min(6, "Password length must be at least 6"),
 }).pick({
   name: true,
   email: true,
-  password: true
-})
+  password: true,
+});
 
 export const userLoginForm = createSelectSchema(users, {
-  password: z.string().min(6)
+  password: z.string().min(6),
 }).pick({
   email: true,
-  password: true
-})
+  password: true,
+});
 
 export const sessionCreateSchema = createInsertSchema(sessions);

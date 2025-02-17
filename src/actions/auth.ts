@@ -3,10 +3,10 @@ import { eq } from "drizzle-orm";
 import { CredentialsSignin } from "next-auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { redirect, RedirectType } from "next/navigation";
-import { z, ZodError } from "zod";
-import { auth, signIn as naSignIn, signOut as naSignOut } from "~/server/auth";
+import { type z, ZodError } from "zod";
+import { signIn as naSignIn, signOut as naSignOut } from "~/server/auth";
 import { db } from "~/server/db";
-import { accounts, userLoginForm, users } from "~/server/db/schema";
+import { accounts, type userLoginForm, users } from "~/server/db/schema";
 
 export async function signIn(
   provider: string,
@@ -15,7 +15,7 @@ export async function signIn(
   try {
     await naSignIn(provider, {
       ...credentials,
-      redirectTo: "/admin"
+      redirectTo: "/admin",
     });
   } catch (error) {
     if (isRedirectError(error)) {

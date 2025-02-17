@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import type * as z from "zod";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 // import { Label } from "~/components/ui/label";
@@ -27,7 +27,6 @@ import {
 import { Separator } from "~/components/ui/separator";
 import SocialLoginButtons from "~/components/SocialLoginButtons";
 import { userLoginForm } from "~/server/db/schema";
-import { CredentialsSignin } from "next-auth";
 import { signIn } from "~/actions/auth";
 
 export default function LoginPage() {
@@ -42,26 +41,26 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof userLoginForm>) {
     // This is where you would typically handle the login logic
     // console.log(values);
-    
-  // try {
-  //   await naSignIn(provider, { ...credentials, redirectTo: "/" });
-  // } catch (error) {
-  //   if (error instanceof CredentialsSignin) {
-  //     console.log("CredentialsSignin error", error.message);
-  //   } else if (error instanceof Error) {
-  //     console.log("error message", error.message);
-  //   } else if (typeof error === "string") {
-  //     console.log("error message", error);
-  //   }  else {
-  //     console.log("error", error);
-  //   }
-  // }
+
+    // try {
+    //   await naSignIn(provider, { ...credentials, redirectTo: "/" });
+    // } catch (error) {
+    //   if (error instanceof CredentialsSignin) {
+    //     console.log("CredentialsSignin error", error.message);
+    //   } else if (error instanceof Error) {
+    //     console.log("error message", error.message);
+    //   } else if (typeof error === "string") {
+    //     console.log("error message", error);
+    //   }  else {
+    //     console.log("error", error);
+    //   }
+    // }
 
     const error = await signIn("credentials", {
       email: values.email,
       password: values.password,
     });
-    console.log(error)
+    console.log(error);
   }
 
   return (
@@ -144,7 +143,7 @@ export default function LoginPage() {
               href="/register"
               className="text-sm text-gray-600 hover:text-gray-900"
             >
-              Don't have an account? Sign up
+              Don&apost have an account? Sign up
             </Link>
           </CardFooter>
         </Card>

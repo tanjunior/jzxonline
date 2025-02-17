@@ -6,12 +6,11 @@ import {
 import GitHubProvider from "next-auth/providers/github";
 // import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { decode, encode } from "next-auth/jwt";
+import { encode } from "next-auth/jwt";
 import { env } from "~/env";
 import { db, drizzleAdapter } from "~/server/db";
 import { v4 as uuid } from "uuid";
 import { userLoginForm } from "~/server/db/schema";
-import { NextResponse } from "next/server";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -51,7 +50,7 @@ export const authConfig = {
   providers: [
     // DiscordProvider,
     GitHubProvider({
-      allowDangerousEmailAccountLinking: true
+      allowDangerousEmailAccountLinking: true,
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -112,7 +111,7 @@ export const authConfig = {
         });
 
         if (!session) throw new Error("session not created");
-        token.sessionToken = session.sessionToken
+        token.sessionToken = session.sessionToken;
       }
 
       return token;
@@ -141,9 +140,9 @@ export const authConfig = {
   jwt: {
     async encode(params) {
       if (params.token?.sessionToken) {
-        return params.token.sessionToken as string
+        return params.token.sessionToken as string;
       }
-      return encode(params)
+      return encode(params);
     },
   },
   pages: {

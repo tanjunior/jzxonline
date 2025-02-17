@@ -1,6 +1,5 @@
-import NextAuth, { User } from "next-auth";
+import NextAuth from "next-auth";
 import { cache } from "react";
-import { drizzleAdapter } from "~/server/db";
 import { authConfig } from "./config";
 
 const {
@@ -8,10 +7,7 @@ const {
   handlers,
   signIn,
   signOut,
-} = NextAuth({
-  adapter: drizzleAdapter,
-  ...authConfig,
-});
+} = NextAuth(authConfig);
 
 const auth = cache(uncachedAuth);
 

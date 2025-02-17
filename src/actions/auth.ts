@@ -4,7 +4,7 @@ import { CredentialsSignin } from "next-auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { redirect, RedirectType } from "next/navigation";
 import { z, ZodError } from "zod";
-import { signIn as naSignIn, signOut as naSignOut } from "~/server/auth";
+import { auth, signIn as naSignIn, signOut as naSignOut } from "~/server/auth";
 import { db } from "~/server/db";
 import { accounts, userLoginForm, users } from "~/server/db/schema";
 
@@ -13,12 +13,13 @@ export async function signIn(
   credentials?: z.infer<typeof userLoginForm>,
 ) {
   try {
-    if (provider == "credentials") {
-      await naSignIn(provider, { ...credentials, redirect: false});
-    } else await naSignIn(provider, { redirect: false });
+    await naSignIn(provider, {
+      ...credentials,
+      redirectTo: "/admin"
+    });
   } catch (error) {
     if (isRedirectError(error)) {
-      return error.message;
+      throw error;
     } else if (error instanceof CredentialsSignin) {
       return error.cause;
     } else if (error instanceof ZodError) {
@@ -32,7 +33,6 @@ export async function signIn(
       return "something went wrong";
     }
   }
-  redirect("/")
 }
 
 export async function signOut() {

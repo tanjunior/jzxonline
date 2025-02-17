@@ -1,17 +1,17 @@
 import {
   CredentialsSignin,
-  type User,
   type DefaultSession,
   type NextAuthConfig,
 } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
-import DiscordProvider from "next-auth/providers/discord";
+// import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { encode as defaultEncode } from "next-auth/jwt";
+import { decode, encode } from "next-auth/jwt";
 import { env } from "~/env";
 import { db, drizzleAdapter } from "~/server/db";
 import { v4 as uuid } from "uuid";
 import { userLoginForm } from "~/server/db/schema";
+import { NextResponse } from "next/server";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -21,7 +21,7 @@ import { userLoginForm } from "~/server/db/schema";
  */
 
 declare module "next-auth" {
-  interface Session {
+  interface Session extends DefaultSession {
     user: {
       id: string;
       role: string;
@@ -36,7 +36,7 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT {
-    id: string;
+    // id: string;
     role: string;
   }
 }
@@ -47,13 +47,11 @@ declare module "next-auth/jwt" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
-  // session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
+  adapter: drizzleAdapter,
   providers: [
-    DiscordProvider,
+    // DiscordProvider,
     GitHubProvider({
-      clientId: env.AUTH_GITHUB_ID,
-      clientSecret: env.AUTH_GITHUB_SECRET,
-      allowDangerousEmailAccountLinking: true,
+      allowDangerousEmailAccountLinking: true
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -94,65 +92,58 @@ export const authConfig = {
     }),
   ],
   callbacks: {
-    jwt: async ({ token, account, user, session }) => {
-      console.log(
-        `[callbacks][jwt][session]: ${JSON.stringify(session, null, 2)}`,
-      );
-      console.log(`[callbacks][jwt][user]: ${JSON.stringify(user, null, 2)}`);
-      console.log(`[callbacks][jwt][token]: ${JSON.stringify(token, null, 2)}`);
-      console.log(
-        `[callbacks][jwt][account]: ${JSON.stringify(account, null, 2)}`,
-      );
+    async jwt({ token, account }) {
+      // console.log(
+      //   `[callbacks][jwt][session]: ${JSON.stringify(session, null, 2)}`,
+      // );
+      // console.log(`[callbacks][jwt][user]: ${JSON.stringify(user, null, 2)}`);
+      // console.log(`[callbacks][jwt][token]: ${JSON.stringify(token, null, 2)}`);
+      // console.log(`[callbacks][jwt][trigger]: ${JSON.stringify(trigger, null, 2)}`);
+      // console.log(
+      //   `[callbacks][jwt][account]: ${JSON.stringify(account, null, 2)}`,
+      // );
 
       if (account?.type == "credentials") {
         const sessionToken = uuid();
         const session = await drizzleAdapter.createSession!({
-          userId: user.id || token.sub || account.providerAccountId,
+          userId: token.sub!,
           sessionToken: sessionToken,
           expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
         });
 
         if (!session) throw new Error("session not created");
-        token.sessionToken = session.sessionToken;
-        token.role = user.role
+        token.sessionToken = session.sessionToken
       }
 
       return token;
     },
-    session: ({ session, user, token }) => {
-      console.log(
-        `[callbacks][session][session]: ${JSON.stringify(session, null, 2)}`,
-      );
-      console.log(
-        `[callbacks][session][user]: ${JSON.stringify(user, null, 2)}`,
-      );
-      console.log(
-        `[callbacks][session][token]: ${JSON.stringify(token, null, 2)}`,
-      );
-      return {
+    async session({ session, user }) {
+      // console.log(
+      //   `[callbacks][session][session]: ${JSON.stringify(session, null, 2)}`,
+      // );
+      // console.log(
+      //   `[callbacks][session][user]: ${JSON.stringify(user, null, 2)}`,
+      // );
+      // console.log(
+      //   `[callbacks][session][token]: ${JSON.stringify(token, null, 2)}`,
+      // );
+      const userSession = {
         ...session,
         user: {
           ...session.user,
-          id: user ? user.id : token.sub,
-          role: user ? user.role : token.role,
+          id: user.id,
+          role: user.role,
         },
       };
+      return userSession;
     },
-    // authorized: async ({ auth, request }) => {
-    //   // const url = request.nextUrl;
-
-    //   // const req = await request.json()
-    //   // console.log(`[callbacks][authorized][req]: ${JSON.stringify(req, null, 2)}`);
-    //   console.log(`[callbacks][authorized][auth]: ${JSON.stringify(auth, null, 2)}`);
-
-    //   return true;
-    // },
   },
   jwt: {
-    maxAge: 60 * 60 * 24 * 30,
-    encode: async (params) => {
-      console.log(`[jwt][encode][params]: ${JSON.stringify(params, null, 2)}`);
-      return defaultEncode(params);
+    async encode(params) {
+      if (params.token?.sessionToken) {
+        return params.token.sessionToken as string
+      }
+      return encode(params)
     },
   },
   pages: {
@@ -162,6 +153,7 @@ export const authConfig = {
     // verifyRequest: "/auth/verify", // Redirect here for email verification
     // newUser: "/", // Redirect here after initial sign-up
   },
+  // trustHost: true,
   secret: env.AUTH_SECRET,
   // debug: true,
 } satisfies NextAuthConfig;

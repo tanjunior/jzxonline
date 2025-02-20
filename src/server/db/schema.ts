@@ -2,6 +2,7 @@ import { type InferInsertModel, relations, sql } from "drizzle-orm";
 import {
   index,
   integer,
+  numeric,
   pgTableCreator,
   primaryKey,
   text,
@@ -35,10 +36,10 @@ export const posts = createTable(
       () => new Date(),
     ),
   },
-  (example) => ({
-    createdByIdIdx: index("created_by_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
-  }),
+  (example) => [
+    index("created_by_idx").on(example.createdById),
+    index("name_idx").on(example.name),
+  ],
 );
 
 export const users = createTable("user", {
@@ -83,12 +84,12 @@ export const accounts = createTable(
     id_token: text("id_token"),
     session_state: varchar("session_state", { length: 255 }),
   },
-  (account) => ({
-    compoundKey: primaryKey({
+  (account) => [
+    primaryKey({
       columns: [account.provider, account.providerAccountId],
     }),
-    userIdIdx: index("account_user_id_idx").on(account.userId),
-  }),
+    index("account_user_id_idx").on(account.userId),
+  ],
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -109,9 +110,7 @@ export const sessions = createTable(
       withTimezone: true,
     }).notNull(),
   },
-  (session) => ({
-    userIdIdx: index("session_user_id_idx").on(session.userId),
-  }),
+  (session) => [index("session_user_id_idx").on(session.userId)],
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -128,12 +127,94 @@ export const verificationTokens = createTable(
       withTimezone: true,
     }).notNull(),
   },
-  (vt) => ({
-    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  }),
+  (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })],
 );
 
-export type user = InferInsertModel<typeof users>;
+export const categories = createTable("categories", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const products = createTable("products", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  name: text("name").notNull(),
+  description: text("description"),
+  price: numeric("price").notNull(),
+  imageUrl: text("image_url"),
+  categoryId: integer("category_id").references(() => categories.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const productRelations = relations(products, ({ one }) => ({
+  category: one(categories, {
+    fields: [products.categoryId],
+    references: [categories.id],
+  }),
+}));
+
+export const categoryRelations = relations(categories, ({ many }) => ({
+  products: many(products),
+}));
+
+export const orders = createTable(
+  "orders",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => users.id),
+    totalAmount: numeric("total_amount").notNull(),
+    orderDate: timestamp("order_date").defaultNow(),
+    shippingAddress: text("shipping_address"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (orders) => [
+    // index("order_id_idx").on(orders.id),
+    // primaryKey({ columns: [orders.id] }),
+  ],
+);
+
+export const orderItems = createTable(
+  "order_items",
+  {
+    orderId: integer("order_id")
+      .notNull()
+      .references(() => orders.id),
+    productId: integer("product_id")
+      .notNull()
+      .references(() => products.id),
+    quantity: integer("quantity").notNull(),
+    price: numeric("price").notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.orderId, table.productId] })],
+);
+
+export const orderRelations = relations(orders, ({ one, many }) => ({
+  user: one(users, {
+    fields: [orders.userId],
+    references: [users.id],
+  }),
+  orderItems: many(orderItems),
+}));
+
+export const orderItemRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
+  }),
+  product: one(products, {
+    fields: [orderItems.productId],
+    references: [products.id],
+  }),
+}));
+
+export type User = InferInsertModel<typeof users>;
 export const userCreateSchema = createInsertSchema(users).pick({
   name: true,
   password: true,
@@ -157,3 +238,24 @@ export const userLoginForm = createSelectSchema(users, {
 });
 
 export const sessionCreateSchema = createInsertSchema(sessions);
+
+export type Product = InferInsertModel<typeof products>;
+export const productCreateSchema = createInsertSchema(products)
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+    id: true,
+  })
+  .extend({
+    name: z.string().min(2, {
+      message: "Name must be at least 2 characters.",
+    }),
+    description: z.string().optional(),
+    price: z.string().regex(/^\d+(\.\d{1,2})?$/, {
+      message: "Price must be a valid number.",
+    }),
+    imageUrl: z.string().optional(),
+    categoryId: z.number().optional()
+  });
+export const productSelectSchema = createSelectSchema(products);
+export type ProductSchemaType = z.infer<typeof productCreateSchema>;

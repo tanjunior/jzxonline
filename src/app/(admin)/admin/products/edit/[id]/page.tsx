@@ -7,25 +7,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { productCreateSchema, type ProductSchemaType } from "~/server/db/schema";
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { CategoryBox } from "~/components/admin/CategoryBox";
 
 
-
-interface Props {
-  params: {
-    id: string;
-  };
-}
-
-export default function EditProductPage({ params }: Props) {
+export default function EditProductPage() {
+  const {id} = useParams()
   const [isUpdating, setIsUpdating] = useState(false);
   const router = useRouter();
-  const { id } = params;
   const { data: product } = api.product.getProductById.useQuery({
-    id: parseInt(id),
+    id: parseInt(id as string),
   });
 
   const form = useForm<ProductSchemaType>({
@@ -55,7 +48,7 @@ export default function EditProductPage({ params }: Props) {
 
   const onSubmit = async (data: ProductSchemaType) => {
     setIsUpdating(true);
-    await updateProduct.mutateAsync({ id: parseInt(id), ...data });
+    await updateProduct.mutateAsync({ id: parseInt(id as string), ...data });
     setIsUpdating(false);
   };
 

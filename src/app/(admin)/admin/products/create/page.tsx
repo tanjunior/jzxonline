@@ -16,13 +16,13 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { CategoryBox } from "~/components/admin/CategoryBox";
-import { productCreateSchema, type ProductSchemaType } from "~/server/db/schema";
+import { productInsertSchema, type ProductSchemaType } from "~/server/db/schema";
 
 export default function CreateProductPage() {
   const [isCreating, setIsCreating] = useState(false);
   const router = useRouter();
   const form = useForm<ProductSchemaType>({
-    resolver: zodResolver(productCreateSchema)
+    resolver: zodResolver(productInsertSchema)
   });
 
   const createProduct = api.product.createProduct.useMutation({

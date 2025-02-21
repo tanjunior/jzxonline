@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { CategoryBox } from "~/components/admin/CategoryBox";
-import { productCreateSchema, ProductSchemaType } from "~/server/db/schema";
+import { productCreateSchema, type ProductSchemaType } from "~/server/db/schema";
 
 export default function CreateProductPage() {
   const [isCreating, setIsCreating] = useState(false);
@@ -33,7 +33,7 @@ export default function CreateProductPage() {
 
   const onSubmit = async (data: ProductSchemaType) => {
     setIsCreating(true);
-    data.categoryId != null && (await createProduct.mutateAsync(data));
+    await createProduct.mutateAsync(data);
 
     setIsCreating(false);
   };

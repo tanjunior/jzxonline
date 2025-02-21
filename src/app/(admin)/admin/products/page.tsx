@@ -3,7 +3,7 @@
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import {
-  ColumnDef,
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,

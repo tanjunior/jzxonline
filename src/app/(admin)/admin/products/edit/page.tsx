@@ -8,7 +8,7 @@ import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { useRouter } from "next/navigation";
-import { productCreateSchema, ProductSchemaType } from "~/server/db/schema";
+import { productCreateSchema, type ProductSchemaType } from "~/server/db/schema";
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { CategoryBox } from "~/components/admin/CategoryBox";
 
@@ -31,18 +31,18 @@ export default function EditProductPage({ params }: Props) {
   const form = useForm<ProductSchemaType>({
     resolver: zodResolver(productCreateSchema),
     defaultValues: {
-      description: product?.description || undefined,
-      imageUrl: product?.imageUrl || undefined,
+      description: product?.description ?? undefined,
+      imageUrl: product?.imageUrl ?? undefined,
       name: product?.name,
       price: product?.price,
-      categoryId: product?.categoryId || undefined
+      categoryId: product?.categoryId ?? undefined
     },
     values: {
-      description: product?.description || undefined,
-      imageUrl: product?.imageUrl || undefined,
-      name: product?.name || "",
-      price: product?.price || "",
-      categoryId: product?.categoryId || undefined
+      description: product?.description ?? undefined,
+      imageUrl: product?.imageUrl ?? undefined,
+      name: product?.name ?? "",
+      price: product?.price ?? "",
+      categoryId: product?.categoryId ?? undefined
     },
     mode: "onChange",
   });

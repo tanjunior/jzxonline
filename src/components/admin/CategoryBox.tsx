@@ -20,7 +20,7 @@ import {
 } from "~/components/ui/popover";
 import { FormControl } from "../ui/form";
 import { api } from "~/trpc/react";
-import { ControllerRenderProps, UseFormReturn } from "react-hook-form";
+import type { ControllerRenderProps, UseFormReturn } from "react-hook-form";
 
 type Props = {
   form: UseFormReturn<{
@@ -29,7 +29,7 @@ type Props = {
       description?: string | undefined;
       imageUrl?: string | undefined;
       categoryId?: number | undefined;
-  }, any, undefined>;
+  }>;
   field: ControllerRenderProps<
     {
       name: string;

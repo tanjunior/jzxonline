@@ -171,11 +171,7 @@ export const orders = createTable(
     shippingAddress: text("shipping_address"),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (orders) => [
-    // index("order_id_idx").on(orders.id),
-    // primaryKey({ columns: [orders.id] }),
-  ],
+  }
 );
 
 export const orderItems = createTable(

@@ -2,8 +2,8 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { db } from "~/server/db";
-import { products, categories } from "~/server/db/schema";
-import { eq, and } from "drizzle-orm";
+import { products } from "~/server/db/schema";
+import { eq } from "drizzle-orm";
 
 export const productRouter = createTRPCRouter({
   getAllProducts: publicProcedure.query(async () => {
@@ -14,8 +14,8 @@ export const productRouter = createTRPCRouter({
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
       return await db.query.products.findFirst({
-        where(fields, operators) {
-          return operators.eq(fields.id, input.id);
+        where(fields, _) {
+          return eq(fields.id, input.id);
         },
       });
     }),
@@ -31,7 +31,7 @@ export const productRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      const price = parseFloat(input.price);
+      // const price = parseFloat(input.price);
       return db.insert(products).values(input);
     }),
 
@@ -47,12 +47,12 @@ export const productRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      const { id, ...rest } = input;
-      const price = rest.price ? parseFloat(rest.price) : undefined;
+      // const { id, ...rest } = input;
+      // const price = rest.price ? parseFloat(rest.price) : undefined;
       return db
         .update(products)
         .set(input)
-        .where(eq(products.id, id));
+        .where(eq(products.id, input.id));
     }),
 
   deleteProduct: publicProcedure

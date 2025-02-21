@@ -10,9 +10,9 @@ import {
 } from "@tanstack/react-table";
 import { api } from "~/trpc/react";
 import { useEffect, useState } from "react";
-import { type Product } from "~/server/db/schema";
+import { type ProductSelect } from "~/server/db/schema";
 
-const columns: ColumnDef<Product>[] = [
+const columns: ColumnDef<ProductSelect>[] = [
   {
     accessorKey: "name",
     header: "Name",
@@ -28,7 +28,7 @@ const columns: ColumnDef<Product>[] = [
   {
     id: "actions",
     cell: ({ row }) => (
-      <Link href={`/admin/products/${row.original.id}/edit`}>
+      <Link href={`/admin/products/edit/${row.original.id}`}>
         <Button>Edit</Button>
       </Link>
     ),
@@ -36,7 +36,7 @@ const columns: ColumnDef<Product>[] = [
 ];
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<ProductSelect[]>([])
   const { data } = api.product.getAllProducts.useQuery();
 
   useEffect(() => {

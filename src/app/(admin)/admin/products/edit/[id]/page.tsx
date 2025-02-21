@@ -8,7 +8,7 @@ import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { useParams, useRouter } from "next/navigation";
-import { productCreateSchema, type ProductSchemaType } from "~/server/db/schema";
+import { productInsertSchema, type ProductSchemaType } from "~/server/db/schema";
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { CategoryBox } from "~/components/admin/CategoryBox";
 
@@ -22,7 +22,7 @@ export default function EditProductPage() {
   });
 
   const form = useForm<ProductSchemaType>({
-    resolver: zodResolver(productCreateSchema),
+    resolver: zodResolver(productInsertSchema),
     defaultValues: {
       description: product?.description ?? undefined,
       imageUrl: product?.imageUrl ?? undefined,

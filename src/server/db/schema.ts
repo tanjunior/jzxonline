@@ -1,4 +1,9 @@
-import { type InferInsertModel, relations, sql } from "drizzle-orm";
+import {
+  type InferInsertModel,
+  type InferSelectModel,
+  relations,
+  sql,
+} from "drizzle-orm";
 import {
   index,
   integer,
@@ -159,20 +164,17 @@ export const categoryRelations = relations(categories, ({ many }) => ({
   products: many(products),
 }));
 
-export const orders = createTable(
-  "orders",
-  {
-    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-    userId: varchar("user_id", { length: 255 })
-      .notNull()
-      .references(() => users.id),
-    totalAmount: numeric("total_amount").notNull(),
-    orderDate: timestamp("order_date").defaultNow(),
-    shippingAddress: text("shipping_address"),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  }
-);
+export const orders = createTable("orders", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+  totalAmount: numeric("total_amount").notNull(),
+  orderDate: timestamp("order_date").defaultNow(),
+  shippingAddress: text("shipping_address"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
 export const orderItems = createTable(
   "order_items",
@@ -210,7 +212,6 @@ export const orderItemRelations = relations(orderItems, ({ one }) => ({
   }),
 }));
 
-export type User = InferInsertModel<typeof users>;
 export const userCreateSchema = createInsertSchema(users).pick({
   name: true,
   password: true,
@@ -233,10 +234,10 @@ export const userLoginForm = createSelectSchema(users, {
   password: true,
 });
 
-export const sessionCreateSchema = createInsertSchema(sessions);
-
-export type Product = InferInsertModel<typeof products>;
-export const productCreateSchema = createInsertSchema(products)
+export type ProductSelect = InferSelectModel<typeof products>;
+export type ProductInsert = InferInsertModel<typeof products>;
+export const productSelectSchema = createSelectSchema(products);
+export const productInsertSchema = createInsertSchema(products)
   .omit({
     createdAt: true,
     updatedAt: true,
@@ -251,7 +252,62 @@ export const productCreateSchema = createInsertSchema(products)
       message: "Price must be a valid number.",
     }),
     imageUrl: z.string().optional(),
-    categoryId: z.number().optional()
+    categoryId: z.number().optional(),
   });
-export const productSelectSchema = createSelectSchema(products);
-export type ProductSchemaType = z.infer<typeof productCreateSchema>;
+export type ProductSchemaType = z.infer<typeof productInsertSchema>;
+
+export type CategorySelect = InferSelectModel<typeof categories>;
+export type CategoryInsert = InferInsertModel<typeof categories>;
+export const categorySelectSchema = createSelectSchema(categories);
+export const categoryInsertSchema = createInsertSchema(categories)
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+    id: true,
+  })
+  .extend({
+    name: z.string().min(2, {
+      message: "Name must be at least 2 characters.",
+    }),
+  });
+export type CategorySchemaType = z.infer<typeof categoryInsertSchema>;
+
+export type OrderItemSelect = InferSelectModel<typeof orderItems>;
+export type OrderItemInsert = InferInsertModel<typeof orderItems>;
+export const orderItemSelectSchema = createSelectSchema(orderItems);
+export const orderItemInsertSchema = createInsertSchema(orderItems)
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    productId: z.number().optional(),
+    quantity: z.number().min(1, {
+      message: "Quantity must be at least 1.",
+    }),
+  });
+export type OrderItemSchemaType = z.infer<typeof orderItemInsertSchema>;
+
+export type UserInsert = InferInsertModel<typeof users>;
+export type UserSelect = InferSelectModel<typeof users>;
+export const userSelectSchema = createSelectSchema(users);
+export const userInsertSchema = createInsertSchema(users)
+  .omit({
+    id: true,
+  })
+  .extend({
+    email: z.string().email({
+      message: "Invalid email address.",
+    }),
+    password: z.string().min(6, {
+      message: "Password must be at least 6 characters.",
+    }),
+  });
+export type UserSchemaType = z.infer<typeof userInsertSchema>;
+
+export type SessionSelect = InferSelectModel<typeof sessions>;
+export type SessionInsert = InferInsertModel<typeof sessions>;
+export const sessionSelectSchema = createSelectSchema(sessions);
+export const sessionInsertSchema = createInsertSchema(sessions);
+export type SessionSchemaType = z.infer<typeof sessionInsertSchema>;
+

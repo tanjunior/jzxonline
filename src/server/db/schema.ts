@@ -14,7 +14,11 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema, createUpdateSchema } from "drizzle-zod";
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-zod";
 import { type AdapterAccount } from "next-auth/adapters";
 import { z } from "zod";
 
@@ -241,7 +245,7 @@ export const productInsertSchema = createInsertSchema(products)
   .omit({
     createdAt: true,
     updatedAt: true,
-    id: true
+    id: true,
   })
   .extend({
     name: z.string().min(2, {

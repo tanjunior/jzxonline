@@ -1,16 +1,16 @@
 "use client";
 
 import {
-  ColumnDef,
-  ColumnFiltersState,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+  type VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
   useReactTable,
-  VisibilityState,
 } from "@tanstack/react-table";
 
 import {
@@ -22,24 +22,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTablePagination } from "../DataTablePagination";
-import { useState, ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { DataTableFiltering } from "../DataTableFiltering";
-import { OneOfType, ValueOf } from "~/lib/utils";
+import type { OneOfType, ValueOf } from "~/lib/utils";
 import { DataTableViewOptions } from "../DataTableViewOptions";
-import { Button } from "./button";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   filterKey: ValueOf<OneOfType<TData>>;
-  children?: ReactNode
+  children?: ReactNode;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   filterKey,
-  children
+  children,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -66,7 +65,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4 gap-2">
+      <div className="flex items-center gap-2 py-4">
         <DataTableFiltering table={table} filterKey={filterKey! as string} />
         <DataTableViewOptions table={table} />
         {children}

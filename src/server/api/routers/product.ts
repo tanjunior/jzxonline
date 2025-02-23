@@ -2,7 +2,11 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { db } from "~/server/db";
-import { productInsertSchema, products, productUpdateSchema } from "~/server/db/schema";
+import {
+  productInsertSchema,
+  products,
+  productUpdateSchema,
+} from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 
 export const productRouter = createTRPCRouter({
@@ -36,7 +40,13 @@ export const productRouter = createTRPCRouter({
       const id = parseInt(input.id);
       return db
         .update(products)
-        .set({ categoryId: input.categoryId, price, description: input.description,imageUrl: input.imageUrl, name:input.name })
+        .set({
+          categoryId: input.categoryId,
+          price,
+          description: input.description,
+          imageUrl: input.imageUrl,
+          name: input.name,
+        })
         .where(eq(products.id, id));
     }),
 

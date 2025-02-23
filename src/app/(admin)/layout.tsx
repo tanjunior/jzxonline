@@ -32,9 +32,7 @@ export default async function AdminLayout({
       <SidebarInset>
         <AdminHeader />
         <main className="flex flex-1">
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            {children}
-          </div>
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
         </main>
       </SidebarInset>
     </SidebarProvider>

@@ -20,18 +20,17 @@ import {
 } from "~/components/ui/popover";
 import { FormControl } from "../ui/form";
 import { api } from "~/trpc/react";
-import type {
-  ControllerRenderProps,
-  FieldValues
-} from "react-hook-form";
-
+import type { ControllerRenderProps, FieldValues } from "react-hook-form";
 
 interface Props<TField extends FieldValues> {
   field: ControllerRenderProps<TField>;
   onSelectAction: (categoryId: number) => void;
 }
 
-export function CategoryBox<TField extends FieldValues>({field, onSelectAction}:Props<TField>) {
+export function CategoryBox<TField extends FieldValues>({
+  field,
+  onSelectAction,
+}: Props<TField>) {
   const { data: categories } = api.category.getAllCategories.useQuery();
   return (
     <Popover>

@@ -1,6 +1,5 @@
-import { Table } from "@tanstack/react-table";
+import type { Table } from "@tanstack/react-table";
 import { Input } from "./ui/input";
-import { OneOfByKey, OneOfType, ValueOf } from "~/lib/utils";
 
 interface DataTableFilteringProps<TData> {
   table: Table<TData>;

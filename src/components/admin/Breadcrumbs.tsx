@@ -15,7 +15,7 @@ import { capitalize } from "~/lib/utils";
 export default function Breadcrumbs() {
   const pathname = usePathname();
   const pathSegments = pathname.split("/").filter(Boolean);
-  
+
   return (
     <Breadcrumb>
       <BreadcrumbList>

@@ -6,11 +6,11 @@ import type {
 } from "~/server/db/schema";
 
 // Helper function to generate a random date within a range
-function randomDate(start: Date, end: Date): Date {
-  return new Date(
-    start.getTime() + Math.random() * (end.getTime() - start.getTime()),
-  );
-}
+// function randomDate(start: Date, end: Date): Date {
+//   return new Date(
+//     start.getTime() + Math.random() * (end.getTime() - start.getTime()),
+//   );
+// }
 
 // ---------------------- User Data ----------------------
 export const mockUsers = Array.from({ length: 10 }).map(() => ({

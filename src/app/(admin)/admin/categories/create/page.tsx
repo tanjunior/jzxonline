@@ -8,16 +8,17 @@ import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { useRouter } from "next/navigation";
+import { Form } from "~/components/ui/form";
 import {
-  Form
-} from "~/components/ui/form";
-import { categoryInsertSchema, type CategorySchemaType } from "~/server/db/schema";
+  categoryInsertSchema,
+  type CategorySchemaType,
+} from "~/server/db/schema";
 
 export default function CreateCategoryPage() {
   const [isCreating, setIsCreating] = useState(false);
   const router = useRouter();
   const form = useForm<CategorySchemaType>({
-    resolver: zodResolver(categoryInsertSchema)
+    resolver: zodResolver(categoryInsertSchema),
   });
 
   const createCategory = api.category.createCategory.useMutation({

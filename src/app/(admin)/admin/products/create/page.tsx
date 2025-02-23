@@ -30,8 +30,8 @@ export default function CreateProductPage() {
       name: "",
       description: "",
       imageUrl: "",
-      price: ""
-    }
+      price: "",
+    },
   });
 
   const createProduct = api.product.createProduct.useMutation({

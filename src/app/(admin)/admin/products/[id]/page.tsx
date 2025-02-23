@@ -15,7 +15,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -31,7 +30,6 @@ export default function EditProductPage() {
     id: parseInt(id as string),
   });
 
-
   const form = useForm<ProductUpdateSchemaType>({
     resolver: zodResolver(productUpdateSchema),
     // defaultValues: {
@@ -46,7 +44,7 @@ export default function EditProductPage() {
       description: product?.description ?? "",
       imageUrl: product?.imageUrl ?? "",
       name: product?.name ?? "",
-      price: product?.price.toString() || "",
+      price: product?.price.toString() ?? "",
       categoryId: product?.categoryId ?? undefined,
       id: id as string,
     },

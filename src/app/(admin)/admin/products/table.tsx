@@ -25,7 +25,7 @@ export default function AdminProductsPage() {
             onClick={() =>
               seed(undefined, {
                 onSuccess() {
-                  utils.product.invalidate();
+                  void utils.product.invalidate();
                 },
               })
             }

@@ -1,30 +1,26 @@
-import { z } from "zod";
+// import { z } from "zod";
 import {
-  mockUsers,
-  mockAccounts,
-  mockSessions,
-  mockVerificationTokens,
+  // mockUsers,
+  // mockAccounts,
+  // mockSessions,
+  // mockVerificationTokens,
   mockCategories,
   mockProducts,
   mockOrders,
   mockOrderItems,
 } from "~/lib/mock";
 
+import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
-import {
-  accounts,
+  // accounts,
   categories,
   orderItems,
   orders,
-  posts,
+  // posts,
   products,
-  sessions,
-  users,
-  verificationTokens,
+  // sessions,
+  // users,
+  // verificationTokens,
 } from "~/server/db/schema";
 
 export const seedRouter = createTRPCRouter({

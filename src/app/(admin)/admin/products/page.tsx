@@ -2,7 +2,7 @@ import { auth } from "~/server/auth";
 import { api, HydrateClient } from "~/trpc/server";
 import AdminProductsPage from "./table";
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
+// import { Suspense } from "react";
 
 export default async function Home() {
   const session = await auth();
@@ -14,7 +14,7 @@ export default async function Home() {
   return (
     <HydrateClient>
       {/* <Suspense fallback={<div>Loading...</div>}> */}
-        <AdminProductsPage />
+      <AdminProductsPage />
       {/* </Suspense> */}
     </HydrateClient>
   );

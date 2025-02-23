@@ -1,7 +1,7 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { DataTableColumnHeader } from "~/components/DataTableColumnHeader";
 // import Link from "next/link";
@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { ProductSelect } from "~/server/db/schema";
+import type { ProductSelect } from "~/server/db/schema";
 
 export const productColumns: ColumnDef<ProductSelect>[] = [
   {

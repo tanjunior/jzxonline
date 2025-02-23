@@ -1,23 +1,77 @@
-// src/components/admin/Sidebar.tsx
+"use client";
 import Link from "next/link";
+import { LayoutDashboard, Package, Tags } from "lucide-react";
 
-export function Sidebar() {
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+
+const navItems = [
+  {
+    title: "Dashboard",
+    href: "/admin",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Products",
+    href: "/admin/products",
+    icon: Package,
+  },
+  {
+    title: "Categories",
+    href: "/admin/categories",
+    icon: Tags,
+  },
+];
+
+export function AdminSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   return (
-    <div className="w-64 bg-gray-200 p-4">
-      <h2 className="text-2xl font-bold mb-4">Admin Panel</h2>
-      <ul>
-        <li>
-          <Link href="/admin/products" className="block py-2 hover:bg-gray-300">
-            Products
-          </Link>
-        </li>
-        <li>
-          <Link href="/admin/categories" className="block py-2 hover:bg-gray-300">
-            Categories
-          </Link>
-        </li>
-        {/* Add more links for other admin sections */}
-      </ul>
-    </div>
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <LayoutDashboard className="size-4" />
+              </div>
+              <div className="flex flex-col gap-0.5 leading-none">
+                <span className="font-semibold">Admin Panel</span>
+                <span className="text-xs">Manage your store</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          {/* <SidebarTrigger /> */}
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            {navItems.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild>
+                  <Link href={item.href}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarRail />
+    </Sidebar>
   );
 }

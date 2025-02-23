@@ -1,55 +1,77 @@
+// src/app/(admin)/products/[id]/edit/page.tsx
 "use client";
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "~/trpc/react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { useParams, useRouter } from "next/navigation";
+import {
+  productUpdateSchema,
+  type ProductUpdateSchemaType,
+} from "~/server/db/schema";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "~/components/ui/form";
 import { CategoryBox } from "~/components/admin/CategoryBox";
-import {
-  productInsertSchema,
-  type ProductInsertSchemaType,
-} from "~/server/db/schema";
 
-export default function CreateProductPage() {
-  const [isCreating, setIsCreating] = useState(false);
+export default function EditProductPage() {
+  const { id } = useParams();
+  const [isUpdating, setIsUpdating] = useState(false);
   const router = useRouter();
-  const form = useForm<ProductInsertSchemaType>({
-    resolver: zodResolver(productInsertSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      imageUrl: "",
-      price: ""
-    }
+  const { data: product } = api.product.getProductById.useQuery({
+    id: parseInt(id as string),
   });
 
-  const createProduct = api.product.createProduct.useMutation({
+
+  const form = useForm<ProductUpdateSchemaType>({
+    resolver: zodResolver(productUpdateSchema),
+    // defaultValues: {
+    //   description: product?.description ?? undefined,
+    //   imageUrl: product?.imageUrl ?? undefined,
+    //   name: product?.name ?? "",
+    //   price: product?.price.toString() || "",
+    //   categoryId: product?.categoryId ?? undefined,
+    //   id: id as string,
+    // },
+    values: {
+      description: product?.description ?? "",
+      imageUrl: product?.imageUrl ?? "",
+      name: product?.name ?? "",
+      price: product?.price.toString() || "",
+      categoryId: product?.categoryId ?? undefined,
+      id: id as string,
+    },
+    mode: "onChange",
+  });
+
+  const updateProduct = api.product.updateProduct.useMutation({
     onSuccess: () => {
       router.push("/admin/products");
     },
   });
 
-  const onSubmit = async (data: ProductInsertSchemaType) => {
-    console.log(data);
-    setIsCreating(true);
-    await createProduct.mutateAsync(data);
-    setIsCreating(false);
+  const onSubmit = async (data: ProductUpdateSchemaType) => {
+    setIsUpdating(true);
+    await updateProduct.mutateAsync(data);
+    setIsUpdating(false);
   };
+
+  if (!product) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Create New Product</h1>
+      <h1 className="text-3xl font-bold">Edit Product</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -122,8 +144,8 @@ export default function CreateProductPage() {
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isCreating}>
-            {isCreating ? "Creating..." : "Create Product"}
+          <Button type="submit" disabled={isUpdating}>
+            {isUpdating ? "Updating..." : "Update Product"}
           </Button>
         </form>
       </Form>

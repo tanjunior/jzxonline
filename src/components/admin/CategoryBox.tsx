@@ -20,30 +20,19 @@ import {
 } from "~/components/ui/popover";
 import { FormControl } from "../ui/form";
 import { api } from "~/trpc/react";
-import type { ControllerRenderProps, UseFormReturn } from "react-hook-form";
+import type {
+  ControllerRenderProps,
+  FieldValues
+} from "react-hook-form";
 
-type Props = {
-  form: UseFormReturn<{
-      name: string;
-      price: string;
-      description?: string | undefined;
-      imageUrl?: string | undefined;
-      categoryId?: number | undefined;
-  }>;
-  field: ControllerRenderProps<
-    {
-      name: string;
-      price: string;
-      description?: string | undefined;
-      imageUrl?: string | undefined;
-      categoryId?: number | undefined;
-    },
-    "name" | "description" | "price" | "imageUrl" | "categoryId"
-  >;
+
+interface Props<TField extends FieldValues> {
+  field: ControllerRenderProps<TField>;
+  onSelectAction: (categoryId: number) => void;
 }
 
-export function CategoryBox({form, field}: Props) {
-  const {data: categories} = api.category.getAllCategories.useQuery()
+export function CategoryBox<TField extends FieldValues>({field, onSelectAction}:Props<TField>) {
+  const { data: categories } = api.category.getAllCategories.useQuery();
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -74,17 +63,13 @@ export function CategoryBox({form, field}: Props) {
                 <CommandItem
                   value={category.name}
                   key={category.id}
-                  onSelect={() => {
-                    form.setValue("categoryId", category.id);
-                  }}
+                  onSelect={() => onSelectAction(category.id)}
                 >
                   {category.name}
                   <Check
                     className={cn(
                       "ml-auto",
-                      category.id === field.value
-                        ? "opacity-100"
-                        : "opacity-0",
+                      category.id === field.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                 </CommandItem>

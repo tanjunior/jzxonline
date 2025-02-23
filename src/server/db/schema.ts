@@ -14,7 +14,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { createInsertSchema, createSelectSchema, createUpdateSchema } from "drizzle-zod";
 import { type AdapterAccount } from "next-auth/adapters";
 import { z } from "zod";
 
@@ -143,10 +143,10 @@ export const categories = createTable("categories", {
 });
 
 export const products = createTable("products", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  id: integer("id").primaryKey().notNull().generatedByDefaultAsIdentity(),
   name: text("name").notNull(),
   description: text("description"),
-  price: numeric("price").notNull(),
+  price: numeric("price").notNull().$type<number>(),
   imageUrl: text("image_url"),
   categoryId: integer("category_id").references(() => categories.id),
   createdAt: timestamp("created_at").defaultNow(),
@@ -169,7 +169,7 @@ export const orders = createTable("orders", {
   userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => users.id),
-  totalAmount: numeric("total_amount").notNull(),
+  totalAmount: numeric("total_amount").notNull().$type<number>(),
   orderDate: timestamp("order_date").defaultNow(),
   shippingAddress: text("shipping_address"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -186,7 +186,7 @@ export const orderItems = createTable(
       .notNull()
       .references(() => products.id),
     quantity: integer("quantity").notNull(),
-    price: numeric("price").notNull(),
+    price: numeric("price").notNull().$type<number>(),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },
@@ -241,7 +241,7 @@ export const productInsertSchema = createInsertSchema(products)
   .omit({
     createdAt: true,
     updatedAt: true,
-    id: true,
+    id: true
   })
   .extend({
     name: z.string().min(2, {
@@ -254,7 +254,26 @@ export const productInsertSchema = createInsertSchema(products)
     imageUrl: z.string().optional(),
     categoryId: z.number().optional(),
   });
-export type ProductSchemaType = z.infer<typeof productInsertSchema>;
+
+export const productUpdateSchema = createUpdateSchema(products)
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    id: z.string().min(1),
+    name: z.string().min(2, {
+      message: "Name must be at least 2 characters.",
+    }),
+    description: z.string().optional(),
+    price: z.string().regex(/^\d+(\.\d{1,2})?$/, {
+      message: "Price must be a valid number.",
+    }),
+    imageUrl: z.string().optional(),
+    categoryId: z.number().optional(),
+  });
+export type ProductInsertSchemaType = z.infer<typeof productInsertSchema>;
+export type ProductUpdateSchemaType = z.infer<typeof productUpdateSchema>;
 
 export type CategorySelect = InferSelectModel<typeof categories>;
 export type CategoryInsert = InferInsertModel<typeof categories>;
@@ -271,6 +290,20 @@ export const categoryInsertSchema = createInsertSchema(categories)
     }),
   });
 export type CategorySchemaType = z.infer<typeof categoryInsertSchema>;
+
+export type OrderSelect = InferInsertModel<typeof orders>;
+export type OrderInsert = InferInsertModel<typeof orders>;
+export const orderSelectSchema = createSelectSchema(orders);
+export const orderInsertSchema = createInsertSchema(orders)
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    userId: z.number().optional(),
+    status: z.string().optional(),
+  });
+export type OrderSchemaType = z.infer<typeof orderInsertSchema>;
 
 export type OrderItemSelect = InferSelectModel<typeof orderItems>;
 export type OrderItemInsert = InferInsertModel<typeof orderItems>;
@@ -310,4 +343,3 @@ export type SessionInsert = InferInsertModel<typeof sessions>;
 export const sessionSelectSchema = createSelectSchema(sessions);
 export const sessionInsertSchema = createInsertSchema(sessions);
 export type SessionSchemaType = z.infer<typeof sessionInsertSchema>;
-

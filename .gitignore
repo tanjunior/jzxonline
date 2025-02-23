@@ -12,6 +12,8 @@
 /prisma/db.sqlite
 /prisma/db.sqlite-journal
 db.sqlite
+/drizzle/meta/*.json
+**.sql
 
 # next.js
 /.next/
@@ -44,3 +46,4 @@ yarn-error.log*
 
 # idea files
 .idea
+

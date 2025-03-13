@@ -7,7 +7,9 @@ import {
 import {
   index,
   integer,
+  json,
   numeric,
+  pgEnum,
   pgTableCreator,
   primaryKey,
   text,
@@ -30,12 +32,31 @@ import { z } from "zod";
  */
 export const createTable = pgTableCreator((name) => `jzxonline_${name}`);
 
+export const users = createTable("user", {
+  id: varchar("id", { length: 36 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: varchar("name", { length: 255 }),
+  email: varchar("email", { length: 255 }).notNull(),
+  emailVerified: timestamp("email_verified", {
+    mode: "date",
+    withTimezone: true,
+  }).default(sql`CURRENT_TIMESTAMP`),
+  image: varchar("image", { length: 255 }),
+  password: varchar("password", { length: 44 }),
+  salt: varchar("salt", { length: 32 }),
+  role: text("role").default("user").notNull(),
+  defaultPaymentMethodId: integer("default_payment_method_id"),
+  defaultShippingAddressId: integer("default_shipping_address_id"),
+});
+
 export const posts = createTable(
   "post",
   {
     id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
     name: varchar("name", { length: 256 }),
-    createdById: varchar("created_by", { length: 255 })
+    createdById: varchar("created_by", { length: 36 })
       .notNull()
       .references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -51,33 +72,80 @@ export const posts = createTable(
   ],
 );
 
-export const users = createTable("user", {
-  id: varchar("id", { length: 255 })
+export const paymentMethods = createTable("payment_methods", {
+  id: integer("id").primaryKey().notNull().generatedByDefaultAsIdentity(),
+  userId: varchar("user_id", { length: 36 })
     .notNull()
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  name: varchar("name", { length: 255 }),
-  email: varchar("email", { length: 255 }).notNull(),
-  emailVerified: timestamp("email_verified", {
-    mode: "date",
-    withTimezone: true,
-  }).default(sql`CURRENT_TIMESTAMP`),
-  image: varchar("image", { length: 255 }),
-  password: text("password"),
-  role: text("role").default("user").notNull(),
+    .references(() => users.id, { onDelete: "cascade" }),
+  methodType: text("method_type").notNull(), // e.g., 'credit_card', 'paypal', etc.
+  cardNumber: text("card_number"), // Store securely or use tokenization
+  expirationDate: text("expiration_date"),
+  billingAddress: json("billing_address").$type<{
+    name: string;
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    phone?: string;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
 });
+
+export const paymentMethodsRelations = relations(paymentMethods, ({ one }) => ({
+  user: one(users, {
+    fields: [paymentMethods.userId],
+    references: [users.id],
+  }),
+}));
+
+export const shippingAddresses = createTable("shipping_addresses", {
+  id: integer("id").primaryKey().notNull().generatedByDefaultAsIdentity(),
+  userId: varchar("user_id", { length: 36 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  street: text("street").notNull(),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  postalCode: text("postal_code").notNull(),
+  country: text("country").notNull(),
+  phone: text("phone"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+// Define relations
+export const shippingAddressesRelations = relations(
+  shippingAddresses,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [shippingAddresses.userId],
+      references: [users.id],
+    }),
+  }),
+);
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   sessions: many(sessions),
+  cartItems: many(cartItems),
+  orders: many(orders),
 }));
 
 export const accounts = createTable(
   "account",
   {
-    userId: varchar("user_id", { length: 255 })
+    userId: varchar("user_id", { length: 36 })
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: "cascade" }),
     type: varchar("type", { length: 255 })
       .$type<AdapterAccount["type"] | "credentials">()
       .notNull(),
@@ -111,9 +179,9 @@ export const sessions = createTable(
     sessionToken: varchar("session_token", { length: 255 })
       .notNull()
       .primaryKey(),
-    userId: varchar("user_id", { length: 255 })
+    userId: varchar("user_id", { length: 36 })
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: "cascade" }),
     expires: timestamp("expires", {
       mode: "date",
       withTimezone: true,
@@ -143,19 +211,28 @@ export const categories = createTable("categories", {
   id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   name: text("name").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
-export const products = createTable("products", {
-  id: integer("id").primaryKey().notNull().generatedByDefaultAsIdentity(),
-  name: text("name").notNull(),
-  description: text("description"),
-  price: numeric("price").notNull().$type<number>(),
-  imageUrl: text("image_url"),
-  categoryId: integer("category_id").references(() => categories.id),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+export const products = createTable(
+  "products",
+  {
+    id: integer("id").primaryKey().notNull().generatedByDefaultAsIdentity(),
+    name: text("name").notNull(),
+    description: text("description").notNull(),
+    price: numeric("price").notNull().$type<number>(),
+    imageUrl: text("image_url"),
+    categoryId: integer("category_id").references(() => categories.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index("product_category_idx").on(table.categoryId)],
+);
 
 export const productRelations = relations(products, ({ one }) => ({
   category: one(categories, {
@@ -168,17 +245,91 @@ export const categoryRelations = relations(categories, ({ many }) => ({
   products: many(products),
 }));
 
-export const orders = createTable("orders", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: varchar("user_id", { length: 255 })
-    .notNull()
-    .references(() => users.id),
-  totalAmount: numeric("total_amount").notNull().$type<number>(),
-  orderDate: timestamp("order_date").defaultNow(),
-  shippingAddress: text("shipping_address"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+// Order status enum
+export const orderStatusEnum = pgEnum("order_status", [
+  "pending",
+  "processing",
+  "shipped",
+  "delivered",
+  "cancelled",
+  "refunded",
+]);
+
+// Payment status enum
+export const paymentStatusEnum = pgEnum("payment_status", [
+  "pending",
+  "paid",
+  "failed",
+  "refunded",
+]);
+
+export const orders = createTable(
+  "orders",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    userId: varchar("user_id", { length: 36 })
+      .notNull()
+      .references(() => users.id),
+    orderDate: timestamp("order_date").defaultNow(),
+    status: orderStatusEnum("status").notNull().default("pending"),
+    paymentStatus: paymentStatusEnum("payment_status")
+      .notNull()
+      .default("pending"),
+    subtotal: numeric("subtotal").notNull().$type<number>(),
+    shipping: numeric("shipping").notNull().$type<number>(),
+    total: numeric("total").notNull().$type<number>(),
+    shippingAddressId: integer("shipping_address_id")
+      .notNull()
+      .references(() => shippingAddresses.id),
+    paymentMethodId: integer("payment_method_id")
+      .notNull()
+      .references(() => paymentMethods.id),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("order_user_idx").on(table.userId),
+    index("order_shipping_address_idx").on(table.shippingAddressId),
+    index("order_payment_method_idx").on(table.paymentMethodId),
+  ],
+);
+
+// Cart items (active shopping cart)
+export const cartItems = createTable(
+  "cart_items",
+  {
+    userId: varchar("user_id", { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    productId: integer("product_id")
+      .notNull()
+      .references(() => products.id),
+    quantity: integer("quantity").notNull().default(1),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => {
+    return [primaryKey({ columns: [table.userId, table.productId] })];
+  },
+);
+
+// Define relations
+export const cartItemsRelations = relations(cartItems, ({ one }) => ({
+  user: one(users, {
+    fields: [cartItems.userId],
+    references: [users.id],
+  }),
+  product: one(products, {
+    fields: [cartItems.productId],
+    references: [products.id],
+  }),
+}));
 
 export const orderItems = createTable(
   "order_items",
@@ -192,7 +343,9 @@ export const orderItems = createTable(
     quantity: integer("quantity").notNull(),
     price: numeric("price").notNull().$type<number>(),
     createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (table) => [primaryKey({ columns: [table.orderId, table.productId] })],
 );
@@ -203,6 +356,14 @@ export const orderRelations = relations(orders, ({ one, many }) => ({
     references: [users.id],
   }),
   orderItems: many(orderItems),
+  shippingAddress: one(shippingAddresses, {
+    fields: [orders.shippingAddressId],
+    references: [shippingAddresses.id],
+  }),
+  paymentMethod: one(paymentMethods, {
+    fields: [orders.paymentMethodId],
+    references: [paymentMethods.id],
+  }),
 }));
 
 export const orderItemRelations = relations(orderItems, ({ one }) => ({
@@ -251,11 +412,11 @@ export const productInsertSchema = createInsertSchema(products)
     name: z.string().min(2, {
       message: "Name must be at least 2 characters.",
     }),
-    description: z.string().optional(),
+    description: z.string(),
     price: z.string().regex(/^\d+(\.\d{1,2})?$/, {
       message: "Price must be a valid number.",
     }),
-    imageUrl: z.string().optional(),
+    imageUrl: z.string(),
     categoryId: z.number().optional(),
   });
 
@@ -265,7 +426,7 @@ export const productUpdateSchema = createUpdateSchema(products)
     updatedAt: true,
   })
   .extend({
-    id: z.string().min(1),
+    id: z.number().int().positive("ID is required"),
     name: z.string().min(2, {
       message: "Name must be at least 2 characters.",
     }),
@@ -295,18 +456,16 @@ export const categoryInsertSchema = createInsertSchema(categories)
   });
 export type CategorySchemaType = z.infer<typeof categoryInsertSchema>;
 
-export type OrderSelect = InferInsertModel<typeof orders>;
+export type OrderSelect = InferSelectModel<typeof orders>;
 export type OrderInsert = InferInsertModel<typeof orders>;
 export const orderSelectSchema = createSelectSchema(orders);
-export const orderInsertSchema = createInsertSchema(orders)
-  .omit({
-    createdAt: true,
-    updatedAt: true,
-  })
-  .extend({
-    userId: z.number().optional(),
-    status: z.string().optional(),
-  });
+export const orderInsertSchema = createInsertSchema(orders).omit({
+  createdAt: true,
+  updatedAt: true,
+  id: true,
+  status: true,
+  paymentStatus: true,
+});
 export type OrderSchemaType = z.infer<typeof orderInsertSchema>;
 
 export type OrderItemSelect = InferSelectModel<typeof orderItems>;
@@ -327,7 +486,10 @@ export type OrderItemSchemaType = z.infer<typeof orderItemInsertSchema>;
 
 export type UserInsert = InferInsertModel<typeof users>;
 export type UserSelect = InferSelectModel<typeof users>;
-export const userSelectSchema = createSelectSchema(users);
+export const userSelectSchema = createSelectSchema(users).omit({
+  password: true,
+  salt: true,
+});
 export const userInsertSchema = createInsertSchema(users)
   .omit({
     id: true,
@@ -347,3 +509,25 @@ export type SessionInsert = InferInsertModel<typeof sessions>;
 export const sessionSelectSchema = createSelectSchema(sessions);
 export const sessionInsertSchema = createInsertSchema(sessions);
 export type SessionSchemaType = z.infer<typeof sessionInsertSchema>;
+
+export type AccountSelect = InferSelectModel<typeof accounts>;
+export type AccountInsert = InferInsertModel<typeof accounts>;
+export const accountSelectSchema = createSelectSchema(accounts);
+export const accountInsertSchema = createInsertSchema(accounts).extend({
+  userId: z.string().min(1, "User ID is required"),
+});
+export type AccountSchemaType = z.infer<typeof accountInsertSchema>;
+
+export type VerificationTokenSelect = InferSelectModel<
+  typeof verificationTokens
+>;
+export type VerificationTokenInsert = InferInsertModel<
+  typeof verificationTokens
+>;
+export const verificationTokenSelectSchema =
+  createSelectSchema(verificationTokens);
+export const verificationTokenInsertSchema =
+  createInsertSchema(verificationTokens);
+export type VerificationTokenSchemaType = z.infer<
+  typeof verificationTokenInsertSchema
+>;

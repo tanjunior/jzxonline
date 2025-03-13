@@ -18,10 +18,10 @@ export default auth(async (req: NextRequest) => {
 
   if (!session) {
     if (isProtectedRoute || isAdminRoute)
-      return NextResponse.redirect(new URL("/login", req.nextUrl));
+      return NextResponse.redirect(new URL("/login", req.url));
   } else {
     if (isAdminRoute && session.user.role != "admin")
-      return NextResponse.redirect(new URL("/", req.nextUrl));
+      return NextResponse.redirect(new URL("/", req.url));
   }
 
   return NextResponse.next();

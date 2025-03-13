@@ -31,6 +31,7 @@ import SocialLoginButtons from "~/components/SocialLoginButtons";
 import { userCreateForm } from "~/server/db/schema";
 // import { register } from "~/actions/auth";
 import { register } from "~/actions/auth";
+import { redirect, RedirectType } from "next/navigation";
 
 export default function RegisterPage() {
   // const {replace} = useRouter()
@@ -49,6 +50,7 @@ export default function RegisterPage() {
     const result = await register(values);
     if (result?.success) {
       console.log(`User created with id: ${result.id}`);
+      redirect("/login", RedirectType.replace);
       // replace("/login");
     } else {
       console.error(result?.error);

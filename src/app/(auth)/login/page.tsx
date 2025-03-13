@@ -39,28 +39,17 @@ export default function LoginPage() {
   });
 
   async function onSubmit(values: z.infer<typeof userLoginForm>) {
-    // This is where you would typically handle the login logic
-    // console.log(values);
-
-    // try {
-    //   await naSignIn(provider, { ...credentials, redirectTo: "/" });
-    // } catch (error) {
-    //   if (error instanceof CredentialsSignin) {
-    //     console.log("CredentialsSignin error", error.message);
-    //   } else if (error instanceof Error) {
-    //     console.log("error message", error.message);
-    //   } else if (typeof error === "string") {
-    //     console.log("error message", error);
-    //   }  else {
-    //     console.log("error", error);
-    //   }
-    // }
-
     const error = await signIn("credentials", {
       email: values.email,
       password: values.password,
     });
-    console.log(error);
+    if (error) {
+      //show error message
+      form.setError("root", {
+        message: error,
+      });
+      return;
+    }
   }
 
   return (
@@ -111,6 +100,9 @@ export default function LoginPage() {
                     </FormItem>
                   )}
                 />
+                {form.formState.errors && (
+                  <p>{form.formState.errors.root?.message}</p>
+                )}
                 <Button type="submit" className="w-full">
                   Log in
                 </Button>

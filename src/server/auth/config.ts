@@ -10,7 +10,9 @@ import { encode } from "next-auth/jwt";
 import { env } from "~/env";
 import { db, drizzleAdapter } from "~/server/db";
 import { v4 as uuid } from "uuid";
-import { userLoginForm } from "~/server/db/schema";
+import { userLoginForm, userSelectSchema } from "~/server/db/schema";
+import type { Adapter } from "next-auth/adapters";
+import { comparePasswords } from "~/lib/utils";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -23,22 +25,32 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      role: string;
+      // role: string;
     } & DefaultSession["user"];
   }
 
   interface User {
     // ...other properties
     role: string;
+    defaultPaymentMethodId: number | null;
+    defaultShippingAddressId: number | null;
   }
 }
 
-declare module "next-auth/jwt" {
-  interface JWT {
-    // id: string;
-    role: string;
-  }
-}
+// declare module "next-auth/jwt" {
+//   interface JWT {
+//     // id: string;
+//     role: string;
+//   }
+// }
+
+export class CouldNotParseError extends CredentialsSignin {}
+
+export class MemberNotFoundError extends CredentialsSignin {}
+
+export class MemberNotActiveError extends CredentialsSignin {}
+
+export class InvalidPasswordError extends CredentialsSignin {}
 
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
@@ -46,7 +58,7 @@ declare module "next-auth/jwt" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
-  adapter: drizzleAdapter,
+  adapter: drizzleAdapter as Adapter,
   providers: [
     // DiscordProvider,
     GitHubProvider({
@@ -59,34 +71,30 @@ export const authConfig = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const { success, data, error } =
+        const { success, data } =
           await userLoginForm.safeParseAsync(credentials);
-        if (!success) throw new Error(error.message);
+        if (!success) throw new CouldNotParseError();
 
         const user = await db.query.users.findFirst({
           where(users, { eq, and }) {
-            return and(
-              eq(users.email, data.email),
-              eq(users.password, data.password),
-            );
-          },
-          columns: {
-            id: true,
-            name: true,
-            role: true,
-            email: true,
-            image: true,
+            return and(eq(users.email, data.email));
           },
         });
-        if (!user)
-          throw new CredentialsSignin({ cause: "Invalid Email or Password" });
 
-        // TODO: decrypt in trpc
-        // if (!(await compare(credentials.password as string, user.password)))
-        //   return null;
+        if (!user?.salt || !user.password) throw new MemberNotFoundError();
 
-        // console.log("[CredentialsProvider][authorize]: "+JSON.stringify(user, null, 2));
-        return user;
+        const matched = await comparePasswords(
+          data.password,
+          user.password,
+          user.salt,
+        );
+        if (!matched) throw new InvalidPasswordError();
+
+        const { success: userParseSuccess, data: safeUser } =
+          await userSelectSchema.safeParseAsync(user);
+        if (!userParseSuccess) throw new CouldNotParseError();
+
+        return safeUser;
       },
     }),
   ],

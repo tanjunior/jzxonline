@@ -1,10 +1,16 @@
 "use server";
 import { eq } from "drizzle-orm";
-import { CredentialsSignin } from "next-auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { redirect, RedirectType } from "next/navigation";
-import { type z, ZodError } from "zod";
+import { type z } from "zod";
+import { generateSalt, hashPassword } from "~/lib/utils";
 import { signIn as naSignIn, signOut as naSignOut } from "~/server/auth";
+import {
+  CouldNotParseError,
+  InvalidPasswordError,
+  MemberNotActiveError,
+  MemberNotFoundError,
+} from "~/server/auth/config";
 import { db } from "~/server/db";
 import { accounts, type userLoginForm, users } from "~/server/db/schema";
 
@@ -18,20 +24,28 @@ export async function signIn(
       redirectTo: "/admin",
     });
   } catch (error) {
+    // see https://github.com/vercel/next.js/issues/55586#issuecomment-1869024539
     if (isRedirectError(error)) {
       throw error;
-    } else if (error instanceof CredentialsSignin) {
-      return error.cause;
-    } else if (error instanceof ZodError) {
-      return error.message;
-    } else if (error instanceof Error) {
-      console.log(error);
-      return error.message;
-    } else if (typeof error === "string") {
-      return error;
-    } else {
-      return "something went wrong";
     }
+
+    if (error instanceof CouldNotParseError) {
+      return "asd";
+    }
+
+    if (error instanceof MemberNotFoundError) {
+      return "The email address you entered is not associated with an existing member account.";
+    }
+
+    if (error instanceof MemberNotActiveError) {
+      return "Your account has not yet been approved or has been disabled. Please contact the administrators for more information.";
+    }
+
+    if (error instanceof InvalidPasswordError) {
+      return "The password you entered is incorrect.";
+    }
+
+    return "Something went wrong while checking your credentials. Please try again later.";
   }
 }
 
@@ -45,11 +59,13 @@ export const register = async (values: { email: string; password: string }) => {
       return eq(users.email, values.email);
     },
   });
+  const salt = await generateSalt();
+  const password = await hashPassword(values.password, salt);
 
   if (!user) {
     const [newUser] = await db
       .insert(users)
-      .values(values)
+      .values({ ...values, password, salt })
       .returning({ id: users.id });
 
     if (!newUser) {
@@ -90,7 +106,7 @@ export const register = async (values: { email: string; password: string }) => {
 
   const [update] = await db
     .update(users)
-    .set({ password: values.password })
+    .set({ password, salt })
     .where(eq(users.email, values.email))
     .returning({ id: users.id });
   if (!update) {

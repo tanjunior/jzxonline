@@ -76,6 +76,37 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  @keyframes slide-out {
+    0% {
+      transform: translateY(0rem);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-2rem);
+    }
+  }
+
+  @keyframes slide-in {
+    0% {
+      opacity: 0;
+      transform: translateY(2rem);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0rem);
+    }
+  }
+
+  ::view-transition-old(page) {
+    animation: slide-out 0.5s ease-out both;
+  }
+
+  ::view-transition-old(page) {
+    animation: slide-in 0.5s ease-out both;
+    animation-delay: 300ms;
+  }
+
   body {
     @apply bg-background text-foreground;
   }

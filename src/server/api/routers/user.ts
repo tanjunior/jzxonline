@@ -1,10 +1,25 @@
+import { eq } from "drizzle-orm";
 import {
   createTRPCRouter,
+  protectedProcedure,
   // protectedProcedure,
   // publicProcedure,
 } from "~/server/api/trpc";
+import { paymentMethods, shippingAddresses } from "~/server/db/schema";
 
 export const userRouter = createTRPCRouter({
+  getShippingAddresses: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.query.shippingAddresses.findMany({
+      where: eq(shippingAddresses.userId, ctx.session.user.id),
+    });
+  }),
+
+  getPaymentMethods: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.query.paymentMethods.findMany({
+      where: eq(paymentMethods.userId, ctx.session.user.id),
+    });
+  }),
+
   // create: publicProcedure
   //   .input(userCreateSchema)
   //   .mutation(async ({ ctx, input }) => {

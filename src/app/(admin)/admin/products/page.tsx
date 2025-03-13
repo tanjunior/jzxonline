@@ -9,7 +9,7 @@ export default async function Home() {
   if (!session?.user) {
     redirect("/login");
   }
-  void api.product.getAllProducts.prefetch();
+  void api.product.getAllProducts.prefetch({ page: 10 });
 
   return (
     <HydrateClient>

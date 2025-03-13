@@ -46,7 +46,7 @@ export default function EditProductPage() {
       name: product?.name ?? "",
       price: product?.price.toString() ?? "",
       categoryId: product?.categoryId ?? undefined,
-      id: id as string,
+      id: parseInt(id as string),
     },
     mode: "onChange",
   });

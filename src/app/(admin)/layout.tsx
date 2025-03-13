@@ -20,7 +20,7 @@ export default async function AdminLayout({
 }) {
   const session = await auth();
 
-  if (!session?.user.role) {
+  if (!session) {
     redirect("/api/auth/signin?callbackUrl=/admin");
   } else if (session.user.role != "admin") {
     redirect("/", RedirectType.replace);
@@ -28,7 +28,7 @@ export default async function AdminLayout({
 
   return (
     <SidebarProvider>
-      <AdminSidebar />
+      <AdminSidebar user={session.user} />
       <SidebarInset>
         <AdminHeader />
         <main className="flex flex-1">

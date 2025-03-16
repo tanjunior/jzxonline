@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import LogoCloud from "../LogoCloud";
 
 export function AnimatedHero() {
   return (
@@ -31,6 +32,7 @@ export function AnimatedHero() {
         >
           <Link href="/product">SHOP NOW</Link>
         </Button>
+        <LogoCloud />
       </div>
     </div>
   );

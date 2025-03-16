@@ -12,7 +12,7 @@ interface DualSliderProps
 }
 
 const DualSlider = React.forwardRef<
-  React.ElementRef<typeof SliderPrimitive.Root>,
+  React.ComponentRef<typeof SliderPrimitive.Root>,
   DualSliderProps
 >(({ className, label, labelPosition = "top", ...props }, ref) => {
   const initialValue = Array.isArray(props.value)

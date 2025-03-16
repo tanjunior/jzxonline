@@ -52,6 +52,7 @@ export default function List() {
     category,
     priceRange,
     search,
+    pageSize: 18,
   });
 
   const { items, metadata } = data;

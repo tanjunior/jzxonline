@@ -15,7 +15,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import Cart from "./Cart";
 import Avatar from "./Avatar";
-import { Session } from "next-auth";
+import type { Session } from "next-auth";
 
 const menuItems = [
   { name: "Home", href: "/" },

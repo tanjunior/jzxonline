@@ -16,7 +16,7 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
   const { addItem, isLoading } = useCart();
 
   const handleAddToCart = () => {
-    void addItem({...product, quantity: 1}); // This now handles both local state and server sync
+    void addItem({ ...product, quantity: 1 }); // This now handles both local state and server sync
   };
 
   return (

@@ -1,5 +1,6 @@
 import { type Metadata } from "next";
-import ShopHeader from "~/components/shop/Header";
+import { Header } from "~/components/shop/Header";
+import { auth } from "~/server/auth";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -7,14 +8,15 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function ShopLayout({
+export default async function ShopLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
   return (
     <>
-      <ShopHeader />
+      <Header session={session} />
       <main className="flex flex-1">{children}</main>
     </>
   );

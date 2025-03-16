@@ -13,8 +13,8 @@ export default function ShopLayout({
 }) {
   return (
     <>
-      <div className="flex flex-1">
-        <div className="container mx-auto flex flex-1 flex-col gap-4 p-4 px-4 pt-0">
+      <div className="flex flex-1 pt-36">
+        <div className="container mx-auto flex flex-1 flex-col gap-4 px-4">
           {children}
         </div>
       </div>

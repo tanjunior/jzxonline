@@ -10,7 +10,7 @@ export default async function Page({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const id = (await params).id;
+  const { id } = await params;
 
   void api.product.getProductById.prefetch({ id: parseInt(id) });
 

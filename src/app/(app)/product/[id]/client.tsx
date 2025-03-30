@@ -36,11 +36,11 @@ export default function client({ id }: { id: number }) {
           </p>
           <p className="mb-4 text-gray-600">{product.description}</p>
           <div className="mb-4 flex gap-2">
-            <Badge variant="secondary">{product.categoryId}</Badge>
+            {/* <Badge variant="secondary">{product.categoryId}</Badge> */}
             {/* <Badge variant="outline">{product.subCategory}</Badge> */}
           </div>
         </div>
-        <AddToCart {...product} />
+        {/* <AddToCart {...product} /> */}
       </div>
     </div>
   );

@@ -16,7 +16,8 @@ export default async function Page({
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Client id={parseInt(id)} />
+      {/* <Client id={parseInt(id)} /> */}
+      {id}
       <Suspense>
         <BackButton />
       </Suspense>

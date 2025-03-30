@@ -17,7 +17,7 @@ export default function client({ id }: { id: number }) {
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <div className="relative aspect-square">
-        <ViewTransition name={`item-${id}`}>
+        {/* <ViewTransition name={`item-${id}`}>
           <Image
             src={"/placeholder.png"}
             alt={product.name}
@@ -26,7 +26,7 @@ export default function client({ id }: { id: number }) {
             className="rounded-lg object-cover"
             id={`item-${id}`}
           />
-        </ViewTransition>
+        </ViewTransition> */}
       </div>
       <div className="flex flex-col justify-between">
         <div>
@@ -36,11 +36,11 @@ export default function client({ id }: { id: number }) {
           </p>
           <p className="mb-4 text-gray-600">{product.description}</p>
           <div className="mb-4 flex gap-2">
-            {/* <Badge variant="secondary">{product.categoryId}</Badge> */}
+            <Badge variant="secondary">{product.categoryId}</Badge>
             {/* <Badge variant="outline">{product.subCategory}</Badge> */}
           </div>
         </div>
-        {/* <AddToCart {...product} /> */}
+        <AddToCart {...product} />
       </div>
     </div>
   );
